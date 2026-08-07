@@ -2,9 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>泡泡学园 - 宝宝的神奇花园</title>
     <style>
         :root {
@@ -23,6 +24,7 @@
             --purple-soft: #e1bee7;
             --orange-soft: #ffe0b2;
             --safe-bottom: env(safe-area-inset-bottom, 16px);
+            --safe-top: env(safe-area-inset-top, 12px);
         }
 
         * {
@@ -33,6 +35,7 @@
             -webkit-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
+            -webkit-user-drag: none;
         }
 
         body {
@@ -49,7 +52,113 @@
             cursor: default;
         }
 
-        /* 天空装饰 - 柔和云朵 */
+        /* 旋转提示层 */
+        .rotate-hint {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            transition: opacity 0.3s;
+        }
+        .rotate-hint.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .rotate-icon {
+            font-size: 90px;
+            animation: rotatePhone 1.8s ease-in-out infinite;
+        }
+        @keyframes rotatePhone {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            75% { transform: rotate(90deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .rotate-text {
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            letter-spacing: 2px;
+        }
+        .rotate-sub {
+            color: rgba(255,255,255,0.8);
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        /* 锁定按钮 */
+        .lock-btn {
+            pointer-events: auto;
+            border: none;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 8px 18px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #5d4037;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+        .lock-btn:active {
+            transform: scale(0.93);
+            background: #f0f0f0;
+        }
+        .lock-btn.active-mode {
+            background: #ff9800;
+            color: white;
+            box-shadow: 0 4px 20px rgba(255,152,0,0.4);
+        }
+
+        /* 解锁按钮 (全屏时显示) */
+        .unlock-btn {
+            position: fixed;
+            top: max(15px, env(safe-area-inset-top, 15px));
+            right: 15px;
+            z-index: 9998;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.5);
+            color: white;
+            font-size: 22px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .unlock-btn.visible {
+            display: flex;
+        }
+        .unlock-btn.holding {
+            background: rgba(255, 80, 80, 0.6);
+            border-color: #ff5252;
+        }
+
+        /* 其他原有样式保持不变 */
         .sky-clouds {
             position: fixed;
             top: 0;
@@ -137,24 +246,13 @@
         }
 
         @keyframes cloudFloat {
-            0% {
-                transform: translateX(0);
-            }
-            25% {
-                transform: translateX(30px);
-            }
-            50% {
-                transform: translateX(-10px);
-            }
-            75% {
-                transform: translateX(20px);
-            }
-            100% {
-                transform: translateX(0);
-            }
+            0% { transform: translateX(0); }
+            25% { transform: translateX(30px); }
+            50% { transform: translateX(-10px); }
+            75% { transform: translateX(20px); }
+            100% { transform: translateX(0); }
         }
 
-        /* 草地装饰 */
         .ground-decoration {
             position: fixed;
             bottom: 0;
@@ -166,26 +264,7 @@
             background: linear-gradient(180deg, transparent 0%, rgba(168, 216, 160, 0.35) 30%, rgba(124, 184, 120, 0.55) 70%, rgba(100, 160, 95, 0.7) 100%);
             border-radius: 60% 70% 0 0 / 40% 40% 0 0;
         }
-        .grass-blade {
-            position: absolute;
-            bottom: 0;
-            width: 8px;
-            background: #8cc97a;
-            border-radius: 50% 50% 0 0;
-            animation: swayGrass 3s ease-in-out infinite;
-            transform-origin: bottom center;
-        }
-        @keyframes swayGrass {
-            0%,
-            100% {
-                transform: rotate(-3deg);
-            }
-            50% {
-                transform: rotate(5deg);
-            }
-        }
 
-        /* 小花 */
         .decor-flower {
             position: fixed;
             pointer-events: none;
@@ -194,19 +273,11 @@
             animation: flowerBob 4s ease-in-out infinite;
         }
         @keyframes flowerBob {
-            0%,
-            100% {
-                transform: translateY(0) rotate(0deg);
-            }
-            30% {
-                transform: translateY(-8px) rotate(3deg);
-            }
-            60% {
-                transform: translateY(-3px) rotate(-2deg);
-            }
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            30% { transform: translateY(-8px) rotate(3deg); }
+            60% { transform: translateY(-3px) rotate(-2deg); }
         }
 
-        /* 主游戏容器 */
         .game-container {
             position: relative;
             z-index: 10;
@@ -219,7 +290,6 @@
             pointer-events: none;
         }
 
-        /* 顶部状态栏 */
         .top-bar {
             pointer-events: auto;
             display: flex;
@@ -227,14 +297,15 @@
             justify-content: center;
             gap: 12px;
             padding: 12px 20px;
-            margin-top: max(12px, env(safe-area-inset-top, 12px));
+            margin-top: var(--safe-top);
             background: var(--card-bg);
             border-radius: 40px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             z-index: 100;
             transition: all 0.3s ease;
+            flex-wrap: wrap;
         }
         .star-display {
             display: flex;
@@ -243,7 +314,6 @@
             font-size: 22px;
             font-weight: 700;
             color: #f59e0b;
-            letter-spacing: 1px;
         }
         .star-icon {
             font-size: 30px;
@@ -251,13 +321,8 @@
             filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.5));
         }
         @keyframes starPulse {
-            0%,
-            100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.25);
-            }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.25); }
         }
         .star-count {
             font-size: 28px;
@@ -301,7 +366,6 @@
             opacity: 0.7;
         }
 
-        /* 泡泡游戏区域 */
         .bubble-area {
             pointer-events: auto;
             flex: 1;
@@ -312,7 +376,6 @@
             overflow: visible;
         }
 
-        /* 泡泡样式 */
         .bubble {
             position: absolute;
             border-radius: 50%;
@@ -359,33 +422,15 @@
             pointer-events: none;
         }
         @keyframes popBubble {
-            0% {
-                transform: scale(1);
-                opacity: 1;
-            }
-            30% {
-                transform: scale(1.5);
-                opacity: 0.7;
-            }
-            100% {
-                transform: scale(2.2);
-                opacity: 0;
-            }
+            0% { transform: scale(1); opacity: 1; }
+            30% { transform: scale(1.5); opacity: 0.7; }
+            100% { transform: scale(2.2); opacity: 0; }
         }
         @keyframes bubbleFloat {
-            0%,
-            100% {
-                transform: translateY(0) translateX(0);
-            }
-            25% {
-                transform: translateY(-18px) translateX(8px);
-            }
-            50% {
-                transform: translateY(-6px) translateX(-4px);
-            }
-            75% {
-                transform: translateY(-22px) translateX(6px);
-            }
+            0%, 100% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-18px) translateX(8px); }
+            50% { transform: translateY(-6px) translateX(-4px); }
+            75% { transform: translateY(-22px) translateX(6px); }
         }
         .bubble .bubble-emoji {
             font-size: var(--emoji-size, 38px);
@@ -410,7 +455,6 @@
             z-index: 2;
         }
 
-        /* 金色泡泡 */
         .bubble.golden {
             background: radial-gradient(circle at 35% 30%,
                     rgba(255, 255, 220, 0.9) 0%,
@@ -427,22 +471,10 @@
             animation-delay: var(--float-delay, 0s), 0s;
         }
         @keyframes goldenGlow {
-            0%,
-            100% {
-                box-shadow: 0 8px 36px rgba(255, 170, 30, 0.35),
-                    inset 0 -4px 12px rgba(255, 255, 200, 0.6),
-                    inset 0 4px 12px rgba(255, 255, 200, 0.9),
-                    0 0 40px rgba(255, 180, 40, 0.4);
-            }
-            50% {
-                box-shadow: 0 8px 44px rgba(255, 170, 30, 0.55),
-                    inset 0 -4px 12px rgba(255, 255, 200, 0.7),
-                    inset 0 4px 12px rgba(255, 255, 200, 0.95),
-                    0 0 60px rgba(255, 180, 40, 0.7);
-            }
+            0%, 100% { box-shadow: 0 8px 36px rgba(255, 170, 30, 0.35), inset 0 -4px 12px rgba(255, 255, 200, 0.6), inset 0 4px 12px rgba(255, 255, 200, 0.9), 0 0 40px rgba(255, 180, 40, 0.4); }
+            50% { box-shadow: 0 8px 44px rgba(255, 170, 30, 0.55), inset 0 -4px 12px rgba(255, 255, 200, 0.7), inset 0 4px 12px rgba(255, 255, 200, 0.95), 0 0 60px rgba(255, 180, 40, 0.7); }
         }
 
-        /* 粒子效果 */
         .particle {
             position: fixed;
             pointer-events: none;
@@ -451,17 +483,10 @@
             animation: particleFly 0.8s ease-out forwards;
         }
         @keyframes particleFly {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--px), var(--py)) scale(0);
-                opacity: 0;
-            }
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--px), var(--py)) scale(0); opacity: 0; }
         }
 
-        /* 飞星 */
         .flying-star {
             position: fixed;
             pointer-events: none;
@@ -470,21 +495,11 @@
             animation: flyToTarget 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
         @keyframes flyToTarget {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            60% {
-                transform: translate(calc(var(--tx) * 0.7), calc(var(--ty) * 0.7)) scale(1.4);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--tx), var(--ty)) scale(0.5);
-                opacity: 0.7;
-            }
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            60% { transform: translate(calc(var(--tx) * 0.7), calc(var(--ty) * 0.7)) scale(1.4); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0.5); opacity: 0.7; }
         }
 
-        /* 庆祝覆盖层 */
         .celebrate-overlay {
             position: fixed;
             top: 0;
@@ -504,21 +519,10 @@
             text-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
         }
         @keyframes celebBounce {
-            0% {
-                transform: scale(0);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1.4);
-                opacity: 1;
-            }
-            70% {
-                transform: scale(0.85);
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.4); opacity: 1; }
+            70% { transform: scale(0.85); }
+            100% { transform: scale(1); opacity: 1; }
         }
         .confetti {
             position: fixed;
@@ -528,27 +532,18 @@
             animation: confettiFall 2.5s ease-in forwards;
         }
         @keyframes confettiFall {
-            0% {
-                transform: translateY(-60px) rotate(0deg) scale(1);
-                opacity: 1;
-            }
-            80% {
-                opacity: 0.8;
-            }
-            100% {
-                transform: translateY(105vh) rotate(720deg) scale(0.3);
-                opacity: 0;
-            }
+            0% { transform: translateY(-60px) rotate(0deg) scale(1); opacity: 1; }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(105vh) rotate(720deg) scale(0.3); opacity: 0; }
         }
 
-        /* 底部模式切换栏 */
         .mode-bar {
             pointer-events: auto;
             display: flex;
             align-items: center;
             gap: 8px;
             padding: 10px 14px;
-            margin-bottom: max(10px, var(--safe-bottom));
+            margin-bottom: var(--safe-bottom);
             background: var(--card-bg);
             border-radius: 30px;
             box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.06);
@@ -572,7 +567,6 @@
             white-space: nowrap;
             letter-spacing: 0.5px;
             font-family: inherit;
-            -webkit-tap-highlight-color: transparent;
         }
         .mode-btn:active {
             transform: scale(0.93);
@@ -591,72 +585,41 @@
 
         /* 响应式 */
         @media (max-width: 480px) {
-            .bubble {
-                width: 75px !important;
-                height: 75px !important;
-            }
-            .bubble .bubble-emoji {
-                font-size: 30px !important;
-            }
-            .bubble .bubble-number {
-                font-size: 28px !important;
-            }
-            .mode-btn {
-                padding: 7px 10px;
-                font-size: 12px;
-                border-radius: 18px;
-            }
-            .mode-btn .mode-emoji {
-                font-size: 15px;
-            }
-            .top-bar {
-                padding: 10px 14px;
-                gap: 8px;
-                border-radius: 30px;
-            }
-            .star-icon {
-                font-size: 24px;
-            }
-            .star-count {
-                font-size: 22px;
-            }
-            .mode-bar {
-                gap: 4px;
-                padding: 8px 10px;
-                border-radius: 24px;
-            }
+            .bubble { width: 75px !important; height: 75px !important; }
+            .bubble .bubble-emoji { font-size: 30px !important; }
+            .bubble .bubble-number { font-size: 28px !important; }
+            .mode-btn { padding: 7px 10px; font-size: 12px; border-radius: 18px; }
+            .mode-btn .mode-emoji { font-size: 15px; }
+            .top-bar { padding: 10px 14px; gap: 8px; border-radius: 30px; }
+            .star-icon { font-size: 24px; }
+            .star-count { font-size: 22px; }
+            .mode-bar { gap: 4px; padding: 8px 10px; border-radius: 24px; }
+            .lock-btn { padding: 6px 12px; font-size: 16px; }
         }
         @media (min-width: 768px) {
-            .bubble {
-                width: 110px !important;
-                height: 110px !important;
-            }
-            .bubble .bubble-emoji {
-                font-size: 46px !important;
-            }
-            .bubble .bubble-number {
-                font-size: 44px !important;
-            }
-            .mode-btn {
-                padding: 10px 18px;
-                font-size: 16px;
-            }
+            .bubble { width: 110px !important; height: 110px !important; }
+            .bubble .bubble-emoji { font-size: 46px !important; }
+            .bubble .bubble-number { font-size: 44px !important; }
+            .mode-btn { padding: 10px 18px; font-size: 16px; }
         }
         @media (min-width: 1024px) {
-            .bubble {
-                width: 120px !important;
-                height: 120px !important;
-            }
-            .bubble .bubble-emoji {
-                font-size: 50px !important;
-            }
-            .bubble .bubble-number {
-                font-size: 48px !important;
-            }
+            .bubble { width: 120px !important; height: 120px !important; }
+            .bubble .bubble-emoji { font-size: 50px !important; }
+            .bubble .bubble-number { font-size: 48px !important; }
         }
     </style>
 </head>
 <body>
+
+    <!-- 旋转提示层 -->
+    <div class="rotate-hint" id="rotateHint">
+        <div class="rotate-icon">📱</div>
+        <div class="rotate-text">请旋转手机</div>
+        <div class="rotate-sub">横屏模式更适合宝宝玩耍哦～</div>
+    </div>
+
+    <!-- 解锁按钮（全屏时出现） -->
+    <div class="unlock-btn" id="unlockBtn">🔓</div>
 
     <!-- 天空云朵装饰 -->
     <div class="sky-clouds">
@@ -686,6 +649,7 @@
             </div>
             <span class="level-indicator" id="levelIndicator">🌱 开始探索</span>
             <button class="sound-btn" id="soundBtn" aria-label="声音开关">🔊</button>
+            <button class="lock-btn" id="lockBtn">🔒 宝宝模式</button>
         </div>
 
         <!-- 泡泡区域 -->
@@ -727,9 +691,12 @@
             const soundBtn = document.getElementById('soundBtn');
             const modeBar = document.getElementById('modeBar');
             const topBar = document.getElementById('topBar');
+            const rotateHint = document.getElementById('rotateHint');
+            const unlockBtn = document.getElementById('unlockBtn');
+            const lockBtn = document.getElementById('lockBtn');
 
             let totalStars = 0;
-            let currentMode = 'mixed'; // mixed, animals, fruits, numbers, colors, shapes
+            let currentMode = 'mixed';
             let soundEnabled = true;
             let bubbles = [];
             let maxBubbles = 5;
@@ -737,19 +704,16 @@
             let audioCtx = null;
             let speechQueue = [];
             let isSpeaking = false;
+            let isLockedMode = false;       // 是否处于宝宝模式（全屏+锁定）
+            let unlockTimer = null;
+            let unlockHoldStart = 0;
 
-            // 根据屏幕大小调整泡泡数量和大小
             function adjustForScreen() {
                 const w = window.innerWidth;
-                if (w < 400) {
-                    maxBubbles = 4;
-                } else if (w < 600) {
-                    maxBubbles = 5;
-                } else if (w < 900) {
-                    maxBubbles = 6;
-                } else {
-                    maxBubbles = 7;
-                }
+                if (w < 400) maxBubbles = 4;
+                else if (w < 600) maxBubbles = 5;
+                else if (w < 900) maxBubbles = 6;
+                else maxBubbles = 7;
             }
             adjustForScreen();
             window.addEventListener('resize', () => {
@@ -760,6 +724,7 @@
                 setTimeout(() => {
                     adjustForScreen();
                     repositionAllBubbles();
+                    checkOrientation();
                 }, 400);
             });
 
@@ -778,7 +743,6 @@
                 { emoji: '🦊', cn: '狐狸', en: 'fox', sound: '聪明的狐狸' },
                 { emoji: '🐻', cn: '小熊', en: 'bear', sound: '胖胖的小熊' },
             ];
-
             const dataFruits = [
                 { emoji: '🍎', cn: '苹果', en: 'apple' },
                 { emoji: '🍌', cn: '香蕉', en: 'banana' },
@@ -791,7 +755,6 @@
                 { emoji: '🍒', cn: '樱桃', en: 'cherry' },
                 { emoji: '🥭', cn: '芒果', en: 'mango' },
             ];
-
             const dataColors = [
                 { emoji: '🔴', cn: '红色', en: 'red', colorHex: '#ef5350' },
                 { emoji: '🔵', cn: '蓝色', en: 'blue', colorHex: '#42a5f5' },
@@ -803,7 +766,6 @@
                 { emoji: '🟤', cn: '棕色', en: 'brown', colorHex: '#8d6e63' },
                 { emoji: '💗', cn: '粉色', en: 'pink', colorHex: '#f48fb1' },
             ];
-
             const dataShapes = [
                 { cn: '圆形', en: 'circle', shapeType: 'circle' },
                 { cn: '方形', en: 'square', shapeType: 'square' },
@@ -812,59 +774,42 @@
                 { cn: '心形', en: 'heart', shapeType: 'heart' },
                 { cn: '菱形', en: 'diamond', shapeType: 'diamond' },
             ];
-
             const dataNumbers = [];
             for (let i = 1; i <= 10; i++) {
-                const fruitEmojis = ['🍎', '🍌', '🍊', '🍓', '🍉', '🍇', '🥝', '🍑', '🍒', '🥭'];
                 dataNumbers.push({
                     number: i,
-                    displayEmoji: fruitEmojis[i - 1],
+                    displayEmoji: ['🍎','🍌','🍊','🍓','🍉','🍇','🥝','🍑','🍒','🥭'][i-1],
                     cn: `${i}`,
-                    en: ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][i],
+                    en: ['','one','two','three','four','five','six','seven','eight','nine','ten'][i],
                     count: i,
                 });
             }
-
             function getDataForMode(mode) {
                 switch (mode) {
-                    case 'animals':
-                        return [...dataAnimals];
-                    case 'fruits':
-                        return [...dataFruits];
-                    case 'numbers':
-                        return [...dataNumbers];
-                    case 'colors':
-                        return [...dataColors];
-                    case 'shapes':
-                        return [...dataShapes];
-                    case 'mixed':
-                    default:
-                        return [
-                            ...dataAnimals.map(d => ({ ...d, category: 'animal' })),
-                            ...dataFruits.map(d => ({ ...d, category: 'fruit' })),
-                            ...dataNumbers.map(d => ({ ...d, category: 'number' })),
-                            ...dataColors.map(d => ({ ...d, category: 'color' })),
-                            ...dataShapes.map(d => ({ ...d, category: 'shape' })),
-                        ];
+                    case 'animals': return [...dataAnimals];
+                    case 'fruits': return [...dataFruits];
+                    case 'numbers': return [...dataNumbers];
+                    case 'colors': return [...dataColors];
+                    case 'shapes': return [...dataShapes];
+                    default: return [
+                        ...dataAnimals.map(d=>({...d,category:'animal'})),
+                        ...dataFruits.map(d=>({...d,category:'fruit'})),
+                        ...dataNumbers.map(d=>({...d,category:'number'})),
+                        ...dataColors.map(d=>({...d,category:'color'})),
+                        ...dataShapes.map(d=>({...d,category:'shape'})),
+                    ];
                 }
             }
 
             // ============ 音频系统 ============
             function getAudioContext() {
                 if (!audioCtx) {
-                    try {
-                        audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-                    } catch (e) {
-                        audioCtx = null;
-                    }
+                    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { audioCtx = null; }
                 }
-                if (audioCtx && audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
                 return audioCtx;
             }
-
-            function playTone(freq, duration, type = 'sine', vol = 0.08) {
+            function playTone(freq, duration, type='sine', vol=0.08) {
                 if (!soundEnabled) return;
                 try {
                     const ctx = getAudioContext();
@@ -879,604 +824,412 @@
                     gain.connect(ctx.destination);
                     osc.start(ctx.currentTime);
                     osc.stop(ctx.currentTime + duration);
-                } catch (e) { /* 静默处理 */ }
+                } catch(e) {}
             }
-
-            function playPopSound() {
-                playTone(600, 0.15, 'sine', 0.06);
-                setTimeout(() => playTone(900, 0.1, 'sine', 0.04), 60);
-                setTimeout(() => playTone(1200, 0.08, 'sine', 0.03), 110);
-            }
-
-            function playStarSound() {
-                playTone(800, 0.12, 'triangle', 0.07);
-                setTimeout(() => playTone(1100, 0.1, 'triangle', 0.06), 70);
-                setTimeout(() => playTone(1400, 0.15, 'triangle', 0.05), 130);
-            }
-
+            function playPopSound() { playTone(600,0.15); setTimeout(()=>playTone(900,0.1),60); setTimeout(()=>playTone(1200,0.08),110); }
+            function playStarSound() { playTone(800,0.12); setTimeout(()=>playTone(1100,0.1),70); setTimeout(()=>playTone(1400,0.15),130); }
             function playCelebrateSound() {
-                const notes = [523, 659, 784, 1047, 784, 1047, 1319];
-                notes.forEach((freq, i) => {
-                    setTimeout(() => playTone(freq, 0.2, 'triangle', 0.08), i * 100);
-                });
+                [523,659,784,1047,784,1047,1319].forEach((f,i)=>setTimeout(()=>playTone(f,0.2,'triangle',0.08),i*100));
             }
-
             function playGoldenSound() {
-                const notes = [600, 800, 1000, 1200, 1600];
-                notes.forEach((freq, i) => {
-                    setTimeout(() => playTone(freq, 0.18, 'sine', 0.07), i * 70);
-                });
+                [600,800,1000,1200,1600].forEach((f,i)=>setTimeout(()=>playTone(f,0.18,'sine',0.07),i*70));
             }
 
             // ============ 语音播报 ============
-            function speak(text, rate = 0.85) {
+            function speak(text, rate=0.85) {
                 if (!soundEnabled) return;
-                speechQueue.push({ text, rate });
+                speechQueue.push({text, rate});
                 if (!isSpeaking) processSpeechQueue();
             }
-
             function processSpeechQueue() {
-                if (speechQueue.length === 0) {
-                    isSpeaking = false;
-                    return;
-                }
+                if (speechQueue.length === 0) { isSpeaking = false; return; }
                 isSpeaking = true;
-                const { text, rate } = speechQueue.shift();
-                if (!('speechSynthesis' in window)) {
-                    isSpeaking = false;
-                    processSpeechQueue();
-                    return;
-                }
-                // 取消之前的语音
+                const {text, rate} = speechQueue.shift();
+                if (!('speechSynthesis' in window)) { isSpeaking = false; processSpeechQueue(); return; }
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'zh-CN';
                 utterance.rate = rate;
                 utterance.pitch = 1.15;
                 utterance.volume = 0.9;
-
-                // 尝试选择中文语音
                 const voices = window.speechSynthesis.getVoices();
-                const zhVoice = voices.find(v => v.lang.includes('zh-CN') || v.lang.includes('zh-TW') || v.lang
-                    .includes('zh-HK'));
-                if (zhVoice) {
-                    utterance.voice = zhVoice;
-                }
-
-                utterance.onend = () => {
-                    setTimeout(() => {
-                        isSpeaking = false;
-                        processSpeechQueue();
-                    }, 150);
-                };
-                utterance.onerror = () => {
-                    isSpeaking = false;
-                    processSpeechQueue();
-                };
-
-                // 超时保护
-                const timeout = setTimeout(() => {
-                    window.speechSynthesis.cancel();
-                    isSpeaking = false;
-                    processSpeechQueue();
-                }, 4000);
-
-                utterance.onend = () => {
-                    clearTimeout(timeout);
-                    setTimeout(() => {
-                        isSpeaking = false;
-                        processSpeechQueue();
-                    }, 150);
-                };
-                utterance.onerror = () => {
-                    clearTimeout(timeout);
-                    isSpeaking = false;
-                    processSpeechQueue();
-                };
-
+                const zhVoice = voices.find(v=>v.lang.includes('zh-CN')||v.lang.includes('zh-TW'));
+                if (zhVoice) utterance.voice = zhVoice;
+                utterance.onend = () => { setTimeout(()=>{ isSpeaking=false; processSpeechQueue(); },150); };
+                utterance.onerror = () => { isSpeaking=false; processSpeechQueue(); };
                 window.speechSynthesis.speak(utterance);
             }
-
-            // 预加载语音列表
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.getVoices();
-                window.speechSynthesis.onvoiceschanged = () => {
-                    window.speechSynthesis.getVoices();
-                };
+                window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
             }
-
             function speakItemData(itemData) {
                 if (!soundEnabled) return;
-                // 清除语音队列
                 speechQueue = [];
                 window.speechSynthesis?.cancel();
                 isSpeaking = false;
-
-                let textToSpeak = '';
-                if (itemData.category === 'number' || itemData.number !== undefined) {
-                    textToSpeak = `${itemData.cn}！`;
-                    if (itemData.en) {
-                        textToSpeak += ` ${itemData.en}`;
-                    }
-                } else if (itemData.category === 'color' || itemData.colorHex) {
-                    textToSpeak = `${itemData.cn}！${itemData.en}`;
-                } else if (itemData.category === 'shape' || itemData.shapeType) {
-                    textToSpeak = `${itemData.cn}！${itemData.en}`;
-                } else if (itemData.sound) {
-                    textToSpeak = `${itemData.cn}！${itemData.sound}！${itemData.en}`;
-                } else {
-                    textToSpeak = `${itemData.cn}！${itemData.en}`;
-                }
-                speak(textToSpeak, 0.8);
+                let text = '';
+                if (itemData.category === 'number' || itemData.number !== undefined) text = `${itemData.cn}！ ${itemData.en}`;
+                else if (itemData.category === 'color' || itemData.colorHex) text = `${itemData.cn}！${itemData.en}`;
+                else if (itemData.category === 'shape' || itemData.shapeType) text = `${itemData.cn}！${itemData.en}`;
+                else if (itemData.sound) text = `${itemData.cn}！${itemData.sound}！${itemData.en}`;
+                else text = `${itemData.cn}！${itemData.en}`;
+                speak(text, 0.8);
             }
 
             // ============ 粒子效果 ============
-            function spawnParticles(x, y, count = 18, colors = null) {
-                const defaultColors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff922b',
-                    '#e040fb', '#00bcd4', '#ff6090', '#69f0ae', '#ffab40'
-                ];
+            function spawnParticles(x,y,count=18,colors=null) {
+                const defaultColors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff922b','#e040fb','#00bcd4','#ff6090','#69f0ae','#ffab40'];
                 const useColors = colors || defaultColors;
-                const fragment = document.createDocumentFragment();
-                for (let i = 0; i < count; i++) {
-                    const particle = document.createElement('div');
-                    particle.className = 'particle';
-                    const size = Math.random() * 14 + 5;
-                    const angle = Math.random() * Math.PI * 2;
-                    const distance = Math.random() * 100 + 40;
-                    const px = Math.cos(angle) * distance;
-                    const py = Math.sin(angle) * distance - Math.random() * 50;
-                    particle.style.cssText = `
-                        left: ${x}px;
-                        top: ${y}px;
-                        width: ${size}px;
-                        height: ${size}px;
-                        background: ${useColors[Math.floor(Math.random() * useColors.length)]};
-                        --px: ${px}px;
-                        --py: ${py}px;
-                        animation-duration: ${Math.random() * 0.5 + 0.5}s;
-                    `;
-                    fragment.appendChild(particle);
+                const frag = document.createDocumentFragment();
+                for (let i=0;i<count;i++) {
+                    const p = document.createElement('div'); p.className='particle';
+                    const size = Math.random()*14+5;
+                    const angle = Math.random()*Math.PI*2;
+                    const dist = Math.random()*100+40;
+                    p.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px;background:${useColors[Math.floor(Math.random()*useColors.length)]};--px:${Math.cos(angle)*dist}px;--py:${Math.sin(angle)*dist - Math.random()*50}px;animation-duration:${Math.random()*0.5+0.5}s;`;
+                    frag.appendChild(p);
                 }
-                document.body.appendChild(fragment);
-                setTimeout(() => {
-                    document.querySelectorAll('.particle').forEach(p => {
-                        if (parseFloat(p.style.animationDuration) < 1.2) p.remove();
-                    });
-                }, 1000);
+                document.body.appendChild(frag);
+                setTimeout(()=>document.querySelectorAll('.particle').forEach(p=>{if(parseFloat(p.style.animationDuration)<1.2)p.remove();}),1000);
             }
-
-            function spawnFlyingStar(fromX, fromY, toElement) {
+            function spawnFlyingStar(fromX,fromY,toElement) {
                 const toRect = toElement.getBoundingClientRect();
-                const toX = toRect.left + toRect.width / 2;
-                const toY = toRect.top + toRect.height / 2;
-                const tx = toX - fromX;
-                const ty = toY - fromY;
-                const star = document.createElement('div');
-                star.className = 'flying-star';
-                star.textContent = '⭐';
-                star.style.cssText = `
-                    left: ${fromX}px;
-                    top: ${fromY}px;
-                    --tx: ${tx}px;
-                    --ty: ${ty}px;
-                `;
+                const tx = toRect.left+toRect.width/2 - fromX;
+                const ty = toRect.top+toRect.height/2 - fromY;
+                const star = document.createElement('div'); star.className='flying-star'; star.textContent='⭐';
+                star.style.cssText = `left:${fromX}px;top:${fromY}px;--tx:${tx}px;--ty:${ty}px;`;
                 document.body.appendChild(star);
                 playStarSound();
-                setTimeout(() => star.remove(), 750);
+                setTimeout(()=>star.remove(),750);
             }
-
             function celebrateMilestone() {
                 playCelebrateSound();
                 const overlay = celebrateOverlay;
-                const textEl = document.createElement('div');
-                textEl.className = 'celebrate-text';
-                const messages = ['🎉 太棒了！', '🌟 真聪明！', '👏 好厉害！', '💖 宝宝真棒！', '🏆 超级明星！', '✨ 了不起！'];
-                textEl.textContent = messages[Math.floor(Math.random() * messages.length)];
+                const textEl = document.createElement('div'); textEl.className='celebrate-text';
+                textEl.textContent = ['🎉 太棒了！','🌟 真聪明！','👏 好厉害！','💖 宝宝真棒！','🏆 超级明星！','✨ 了不起！'][Math.floor(Math.random()*6)];
                 overlay.appendChild(textEl);
-
-                // 满屏彩纸
-                const confettiEmojis = ['🌟', '✨', '💫', '🎀', '🌸', '💖', '🎉', '🎊', '💝', '🌈', '⭐', '🦋'];
-                for (let i = 0; i < 35; i++) {
-                    setTimeout(() => {
-                        const confetti = document.createElement('div');
-                        confetti.className = 'confetti';
-                        confetti.textContent = confettiEmojis[Math.floor(Math.random() * confettiEmojis
-                            .length)];
-                        confetti.style.cssText = `
-                            left: ${Math.random() * 90 + 5}%;
-                            top: -30px;
-                            animation-delay: ${Math.random() * 0.4}s;
-                            animation-duration: ${Math.random() * 1.5 + 2}s;
-                            font-size: ${Math.random() * 20 + 18}px;
-                        `;
-                        overlay.appendChild(confetti);
-                    }, i * 25);
-                }
-
-                setTimeout(() => {
-                    textEl.remove();
-                    overlay.querySelectorAll('.confetti').forEach(c => c.remove());
-                }, 3000);
+                const confettiEmojis = ['🌟','✨','💫','🎀','🌸','💖','🎉','🎊','💝','🌈','⭐','🦋'];
+                for (let i=0;i<35;i++) setTimeout(()=>{
+                    const c = document.createElement('div'); c.className='confetti';
+                    c.textContent = confettiEmojis[Math.floor(Math.random()*confettiEmojis.length)];
+                    c.style.cssText = `left:${Math.random()*90+5}%;top:-30px;animation-delay:${Math.random()*0.4}s;animation-duration:${Math.random()*1.5+2}s;font-size:${Math.random()*20+18}px;`;
+                    overlay.appendChild(c);
+                },i*25);
+                setTimeout(()=>{textEl.remove();overlay.querySelectorAll('.confetti').forEach(c=>c.remove());},3000);
             }
 
             // ============ 泡泡管理 ============
             function getBubbleSize() {
                 const w = window.innerWidth;
-                if (w < 400) return 75;
-                if (w < 600) return 85;
-                if (w < 900) return 100;
-                return 115;
+                if (w<400) return 75; if (w<600) return 85; if (w<900) return 100; return 115;
             }
-
             function getRandomPosition(bubbleSize) {
                 const areaRect = bubbleArea.getBoundingClientRect();
-                const margin = bubbleSize + 10;
-                const maxX = areaRect.width - margin;
-                const maxY = areaRect.height - margin;
-                const x = Math.random() * maxX + margin / 2;
-                const y = Math.random() * maxY + margin / 2;
-                return { x, y };
+                const margin = bubbleSize+10;
+                return {
+                    x: Math.random()*(areaRect.width-margin) + margin/2,
+                    y: Math.random()*(areaRect.height-margin) + margin/2
+                };
             }
-
-            function isTooClose(newX, newY, existingBubbles, minDist) {
-                for (const b of existingBubbles) {
-                    const bx = parseFloat(b.el.style.left);
-                    const by = parseFloat(b.el.style.top);
-                    const dist = Math.sqrt((newX - bx) ** 2 + (newY - by) ** 2);
-                    if (dist < minDist) return true;
+            function isTooClose(newX,newY,existingBubbles,minDist) {
+                for(const b of existingBubbles) {
+                    const bx = parseFloat(b.el.style.left), by = parseFloat(b.el.style.top);
+                    if(Math.sqrt((newX-bx)**2+(newY-by)**2) < minDist) return true;
                 }
                 return false;
             }
-
-            function createBubbleElement(itemData, isGolden = false) {
+            function createBubbleElement(itemData, isGolden=false) {
                 const size = getBubbleSize();
-                const el = document.createElement('div');
-                el.className = 'bubble' + (isGolden ? ' golden' : '');
-                const floatDuration = (Math.random() * 2.5 + 3) + 's';
-                const floatDelay = (Math.random() * 3) + 's';
-                el.style.cssText = `
-                    width: ${size}px;
-                    height: ${size}px;
-                    --float-duration: ${floatDuration};
-                    --float-delay: ${floatDelay};
-                    --emoji-size: ${size * 0.42}px;
-                `;
+                const el = document.createElement('div'); el.className = 'bubble'+(isGolden?' golden':'');
+                el.style.cssText = `width:${size}px;height:${size}px;--float-duration:${Math.random()*2.5+3}s;--float-delay:${Math.random()*3}s;--emoji-size:${size*0.42}px;`;
+                const softColors = ['rgba(255,182,193,0.4)','rgba(173,216,230,0.4)','rgba(152,251,152,0.4)','rgba(255,255,180,0.4)','rgba(221,160,221,0.4)','rgba(255,218,185,0.4)','rgba(200,230,255,0.4)','rgba(255,228,225,0.4)','rgba(230,255,230,0.4)'];
+                el.style.setProperty('--bubble-color', softColors[Math.floor(Math.random()*softColors.length)]);
 
-                // 随机柔和颜色
-                const softColors = [
-                    'rgba(255,182,193,0.4)', 'rgba(173,216,230,0.4)', 'rgba(152,251,152,0.4)',
-                    'rgba(255,255,180,0.4)', 'rgba(221,160,221,0.4)', 'rgba(255,218,185,0.4)',
-                    'rgba(200,230,255,0.4)', 'rgba(255,228,225,0.4)', 'rgba(230,255,230,0.4)',
-                ];
-                const chosenColor = softColors[Math.floor(Math.random() * softColors.length)];
-                el.style.setProperty('--bubble-color', chosenColor);
-
-                // 内容
-                if (itemData.category === 'shape' || itemData.shapeType) {
-                    const shapeDiv = document.createElement('div');
-                    shapeDiv.className = 'bubble-shape';
-                    shapeDiv.style.cssText = getShapeCSS(itemData.shapeType, size * 0.35);
+                if (itemData.category==='shape'||itemData.shapeType) {
+                    const shapeDiv = document.createElement('div'); shapeDiv.className='bubble-shape';
+                    shapeDiv.style.cssText = getShapeCSS(itemData.shapeType, size*0.35);
                     el.appendChild(shapeDiv);
-                } else if (itemData.category === 'number' || itemData.number !== undefined) {
-                    const numSpan = document.createElement('span');
-                    numSpan.className = 'bubble-number';
-                    numSpan.textContent = itemData.number;
+                } else if (itemData.category==='number'||itemData.number!==undefined) {
+                    const numSpan = document.createElement('span'); numSpan.className='bubble-number'; numSpan.textContent=itemData.number;
                     el.appendChild(numSpan);
-                    // 小装饰emoji
-                    if (itemData.displayEmoji && itemData.count <= 5) {
-                        const miniEmoji = document.createElement('span');
-                        miniEmoji.style.cssText =
-                            'position:absolute;bottom:18%;font-size:14px;pointer-events:none;z-index:2;';
-                        miniEmoji.textContent = itemData.displayEmoji.repeat(Math.min(itemData.count, 5));
-                        el.appendChild(miniEmoji);
+                    if(itemData.displayEmoji && itemData.count<=5) {
+                        const mini = document.createElement('span'); mini.style.cssText='position:absolute;bottom:18%;font-size:14px;pointer-events:none;z-index:2;';
+                        mini.textContent = itemData.displayEmoji.repeat(Math.min(itemData.count,5));
+                        el.appendChild(mini);
                     }
-                } else if (itemData.category === 'color' || itemData.colorHex) {
-                    const colorDot = document.createElement('div');
-                    colorDot.style.cssText = `
-                        width: ${size * 0.45}px;
-                        height: ${size * 0.45}px;
-                        border-radius: 50%;
-                        background: ${itemData.colorHex || itemData.emoji};
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-                        pointer-events: none;
-                        z-index: 2;
-                        position: relative;
-                    `;
-                    el.appendChild(colorDot);
+                } else if (itemData.category==='color'||itemData.colorHex) {
+                    const dot = document.createElement('div'); dot.style.cssText=`width:${size*0.45}px;height:${size*0.45}px;border-radius:50%;background:${itemData.colorHex||itemData.emoji};box-shadow:0 4px 15px rgba(0,0,0,0.15);pointer-events:none;z-index:2;position:relative;`;
+                    el.appendChild(dot);
                 } else {
-                    const emojiSpan = document.createElement('span');
-                    emojiSpan.className = 'bubble-emoji';
-                    emojiSpan.textContent = itemData.emoji || '❓';
+                    const emojiSpan = document.createElement('span'); emojiSpan.className='bubble-emoji'; emojiSpan.textContent=itemData.emoji||'❓';
                     el.appendChild(emojiSpan);
                 }
-
-                // 点击事件
-                el.addEventListener('click', (e) => {
-                    if (isProcessing) return;
-                    if (el.classList.contains('popping')) return;
-                    handleBubbleClick(el, itemData, isGolden, e);
-                });
-                el.addEventListener('touchend', (e) => {
-                    if (isProcessing) return;
-                    if (el.classList.contains('popping')) return;
-                    e.preventDefault();
-                    handleBubbleClick(el, itemData, isGolden, e);
-                });
-
+                el.addEventListener('click',(e)=>{ if(isProcessing||el.classList.contains('popping'))return; handleBubbleClick(el,itemData,isGolden,e); });
+                el.addEventListener('touchend',(e)=>{ if(isProcessing||el.classList.contains('popping'))return; e.preventDefault(); handleBubbleClick(el,itemData,isGolden,e); });
                 return el;
             }
-
             function getShapeCSS(shapeType, size) {
-                const s = size + 'px';
-                switch (shapeType) {
-                    case 'circle':
-                        return `width:${s};height:${s};border-radius:50%;background:#ff8a80;box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
-                    case 'square':
-                        return `width:${s};height:${s};border-radius:6px;background:#82b1ff;box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
-                    case 'triangle':
-                        return `width:0;height:0;border-left:${size*0.5}px solid transparent;border-right:${size*0.5}px solid transparent;border-bottom:${size}px solid #69f0ae;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.12));`;
-                    case 'star':
-                        return `width:${s};height:${s};background:#ffd740;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
-                    case 'heart':
-                        return `width:${s};height:${s};background:#ff4081;clip-path:path('M50,30 C50,10 10,10 10,35 C10,60 50,85 50,85 C50,85 90,60 90,35 C90,10 50,10 50,30Z');box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
-                    case 'diamond':
-                        return `width:${s};height:${s};background:#b388ff;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
-                    default:
-                        return `width:${s};height:${s};border-radius:50%;background:#ccc;`;
+                const s = size+'px';
+                switch(shapeType) {
+                    case 'circle': return `width:${s};height:${s};border-radius:50%;background:#ff8a80;box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
+                    case 'square': return `width:${s};height:${s};border-radius:6px;background:#82b1ff;box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
+                    case 'triangle': return `width:0;height:0;border-left:${size*0.5}px solid transparent;border-right:${size*0.5}px solid transparent;border-bottom:${size}px solid #69f0ae;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.12));`;
+                    case 'star': return `width:${s};height:${s};background:#ffd740;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
+                    case 'heart': return `width:${s};height:${s};background:#ff4081;clip-path:path('M50,30 C50,10 10,10 10,35 C10,60 50,85 50,85 C50,85 90,60 90,35 C90,10 50,10 50,30Z');box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
+                    case 'diamond': return `width:${s};height:${s};background:#b388ff;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
+                    default: return `width:${s};height:${s};border-radius:50%;background:#ccc;`;
                 }
             }
-
             function handleBubbleClick(el, itemData, isGolden, event) {
                 isProcessing = true;
                 const rect = el.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-
-                // 弹出动画
+                const centerX = rect.left+rect.width/2, centerY = rect.top+rect.height/2;
                 el.classList.add('popping');
-                playPopSound();
-                if (isGolden) {
-                    playGoldenSound();
-                }
-
-                // 粒子效果
-                const goldenColors = ['#ffd700', '#ffec8b', '#ffeaa7', '#fff176', '#ffcc00', '#ffab00'];
-                spawnParticles(centerX, centerY, isGolden ? 30 : 18, isGolden ? goldenColors : null);
-
-                // 飞星
-                const starTarget = document.getElementById('topBar');
-                spawnFlyingStar(centerX, centerY, starTarget);
-
-                // 更新星星
-                const starsEarned = isGolden ? 3 : 1;
-                totalStars += starsEarned;
+                playPopSound(); if(isGolden) playGoldenSound();
+                spawnParticles(centerX,centerY, isGolden?30:18, isGolden?['#ffd700','#ffec8b','#ffeaa7','#fff176','#ffcc00','#ffab00']:null);
+                spawnFlyingStar(centerX,centerY, document.getElementById('topBar'));
+                totalStars += isGolden?3:1;
                 updateStarDisplay();
-
-                // 语音播报
                 speakItemData(itemData);
-
-                // 检查里程碑
-                if (totalStars % 10 === 0 && totalStars > 0) {
-                    setTimeout(() => celebrateMilestone(), 400);
-                }
-
-                // 移除泡泡并生成新泡泡
-                setTimeout(() => {
-                    if (el.parentNode) el.remove();
-                    const idx = bubbles.findIndex(b => b.el === el);
-                    if (idx >= 0) bubbles.splice(idx, 1);
+                if(totalStars%10===0 && totalStars>0) setTimeout(()=>celebrateMilestone(),400);
+                setTimeout(()=>{
+                    if(el.parentNode) el.remove();
+                    const idx = bubbles.findIndex(b=>b.el===el);
+                    if(idx>=0) bubbles.splice(idx,1);
                     refillBubbles();
                     isProcessing = false;
-                }, 450);
-
-                // 如果是金色泡泡，额外生成一个普通泡泡
-                if (isGolden) {
-                    setTimeout(() => refillBubbles(), 300);
-                }
+                },450);
+                if(isGolden) setTimeout(()=>refillBubbles(),300);
             }
-
             function updateStarDisplay() {
                 starCountEl.textContent = totalStars;
-                if (totalStars >= 100) {
-                    levelIndicator.textContent = '🏆 超级学霸';
-                } else if (totalStars >= 50) {
-                    levelIndicator.textContent = '🌟 智慧之星';
-                } else if (totalStars >= 30) {
-                    levelIndicator.textContent = '🎈 学习达人';
-                } else if (totalStars >= 15) {
-                    levelIndicator.textContent = '🌻 小小探索家';
-                } else if (totalStars >= 5) {
-                    levelIndicator.textContent = '🌱 初学宝宝';
-                } else {
-                    levelIndicator.textContent = '🌱 开始探索';
-                }
-                // 顶部栏微动画
-                topBar.style.transform = 'scale(1.04)';
-                setTimeout(() => { topBar.style.transform = 'scale(1)'; }, 200);
+                if(totalStars>=100) levelIndicator.textContent='🏆 超级学霸';
+                else if(totalStars>=50) levelIndicator.textContent='🌟 智慧之星';
+                else if(totalStars>=30) levelIndicator.textContent='🎈 学习达人';
+                else if(totalStars>=15) levelIndicator.textContent='🌻 小小探索家';
+                else if(totalStars>=5) levelIndicator.textContent='🌱 初学宝宝';
+                else levelIndicator.textContent='🌱 开始探索';
+                topBar.style.transform='scale(1.04)'; setTimeout(()=>topBar.style.transform='scale(1)',200);
             }
-
             function refillBubbles() {
-                const currentCount = bubbles.filter(b => !b.el.classList.contains('popping')).length;
-                const needed = maxBubbles - currentCount;
-                for (let i = 0; i < needed; i++) {
-                    spawnOneBubble();
-                }
+                const currentCount = bubbles.filter(b=>!b.el.classList.contains('popping')).length;
+                for(let i=0;i<maxBubbles-currentCount;i++) spawnOneBubble();
             }
-
             function spawnOneBubble() {
                 const dataPool = getDataForMode(currentMode);
-                if (dataPool.length === 0) return;
-                const itemData = dataPool[Math.floor(Math.random() * dataPool.length)];
-                // 金色泡泡概率12%
-                const isGolden = Math.random() < 0.12;
+                if(!dataPool.length) return;
+                const itemData = dataPool[Math.floor(Math.random()*dataPool.length)];
+                const isGolden = Math.random()<0.12;
                 const el = createBubbleElement(itemData, isGolden);
                 const size = getBubbleSize();
-                let pos;
-                let attempts = 0;
-                const activeBubbles = bubbles.filter(b => !b.el.classList.contains('popping'));
-                do {
-                    pos = getRandomPosition(size);
-                    attempts++;
-                } while (isTooClose(pos.x, pos.y, activeBubbles, size * 1.5) && attempts < 30);
-
-                el.style.left = pos.x + 'px';
-                el.style.top = pos.y + 'px';
+                let pos, attempts=0;
+                const activeBubbles = bubbles.filter(b=>!b.el.classList.contains('popping'));
+                do { pos = getRandomPosition(size); attempts++; } while(isTooClose(pos.x,pos.y,activeBubbles,size*1.5) && attempts<30);
+                el.style.left=pos.x+'px'; el.style.top=pos.y+'px';
                 bubbleArea.appendChild(el);
-                bubbles.push({ el, itemData, isGolden });
+                bubbles.push({el,itemData,isGolden});
             }
-
             function repositionAllBubbles() {
                 const size = getBubbleSize();
-                const activeBubbles = bubbles.filter(b => !b.el.classList.contains('popping'));
-                // 重新分配位置
-                const tempList = [];
-                for (const b of activeBubbles) {
-                    let pos;
-                    let attempts = 0;
-                    do {
-                        pos = getRandomPosition(size);
-                        attempts++;
-                    } while (isTooClose(pos.x, pos.y, tempList, size * 1.4) && attempts < 30);
-                    b.el.style.left = pos.x + 'px';
-                    b.el.style.top = pos.y + 'px';
-                    b.el.style.width = size + 'px';
-                    b.el.style.height = size + 'px';
-                    b.el.style.setProperty('--emoji-size', size * 0.42 + 'px');
-                    tempList.push({ el: b.el, x: pos.x, y: pos.y });
+                const active = bubbles.filter(b=>!b.el.classList.contains('popping'));
+                const temp = [];
+                for(const b of active) {
+                    let pos, attempts=0;
+                    do { pos = getRandomPosition(size); attempts++; } while(isTooClose(pos.x,pos.y,temp,size*1.4) && attempts<30);
+                    b.el.style.left=pos.x+'px'; b.el.style.top=pos.y+'px';
+                    b.el.style.width=size+'px'; b.el.style.height=size+'px';
+                    b.el.style.setProperty('--emoji-size',size*0.42+'px');
+                    temp.push({el:b.el, x:pos.x, y:pos.y});
                 }
             }
-
             function clearAllBubbles() {
-                for (const b of bubbles) {
-                    if (b.el.parentNode) b.el.remove();
-                }
+                bubbles.forEach(b=>b.el.parentNode&&b.el.remove());
                 bubbles = [];
-                speechQueue = [];
-                window.speechSynthesis?.cancel();
-                isSpeaking = false;
-                isProcessing = false;
+                speechQueue=[]; window.speechSynthesis?.cancel(); isSpeaking=false; isProcessing=false;
             }
-
             function initBubbles() {
                 clearAllBubbles();
-                for (let i = 0; i < maxBubbles; i++) {
-                    spawnOneBubble();
-                }
+                for(let i=0;i<maxBubbles;i++) spawnOneBubble();
             }
 
             // ============ 模式切换 ============
-            modeBar.addEventListener('click', (e) => {
+            modeBar.addEventListener('click',(e)=>{
                 const btn = e.target.closest('.mode-btn');
-                if (!btn) return;
-                const mode = btn.dataset.mode;
-                if (mode === currentMode) return;
-                currentMode = mode;
-                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                if(!btn || btn.dataset.mode===currentMode) return;
+                currentMode = btn.dataset.mode;
+                document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
                 btn.classList.add('active');
-                clearAllBubbles();
-                initBubbles();
-                // 模式切换提示
-                const modeNames = {
-                    mixed: '混合模式！探索各种知识',
-                    animals: '动物朋友！来认识小动物吧',
-                    fruits: '水果乐园！看看有哪些水果',
-                    numbers: '数字天地！一起来数数',
-                    colors: '彩虹颜色！认识美丽的颜色',
-                    shapes: '形状王国！发现有趣的形状',
-                };
-                if (soundEnabled) {
-                    speak(modeNames[mode] || '切换模式', 0.9);
-                }
+                clearAllBubbles(); initBubbles();
+                const modeNames = {mixed:'混合模式',animals:'动物朋友',fruits:'水果乐园',numbers:'数字天地',colors:'彩虹颜色',shapes:'形状王国'};
+                if(soundEnabled) speak(modeNames[currentMode]||'切换模式',0.9);
             });
 
             // ============ 声音开关 ============
-            soundBtn.addEventListener('click', () => {
-                soundEnabled = !soundEnabled;
-                if (soundEnabled) {
-                    soundBtn.textContent = '🔊';
-                    soundBtn.classList.remove('muted');
-                    playTone(500, 0.1, 'sine', 0.04);
+            soundBtn.addEventListener('click',()=>{
+                soundEnabled=!soundEnabled;
+                soundBtn.textContent = soundEnabled?'🔊':'🔇';
+                soundBtn.classList.toggle('muted',!soundEnabled);
+                if(!soundEnabled){ speechQueue=[]; window.speechSynthesis?.cancel(); isSpeaking=false; }
+                else playTone(500,0.1);
+            });
+
+            // ============ 横屏全屏 & 锁定逻辑 ============
+            function isLandscape() {
+                return window.innerWidth > window.innerHeight;
+            }
+            function checkOrientation() {
+                if (!isLockedMode) {
+                    // 普通模式：竖屏时显示旋转提示
+                    if (!isLandscape() && window.innerWidth < 768) {
+                        rotateHint.classList.remove('hidden');
+                    } else {
+                        rotateHint.classList.add('hidden');
+                    }
                 } else {
-                    soundBtn.textContent = '🔇';
-                    soundBtn.classList.add('muted');
-                    speechQueue = [];
-                    window.speechSynthesis?.cancel();
-                    isSpeaking = false;
+                    // 宝宝模式下隐藏旋转提示
+                    rotateHint.classList.add('hidden');
+                }
+            }
+            window.addEventListener('resize', checkOrientation);
+            window.addEventListener('orientationchange', checkOrientation);
+
+            function requestFullscreen(element) {
+                const el = element || document.documentElement;
+                const requestMethod = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+                if (requestMethod) {
+                    requestMethod.call(el).catch(err => console.log('全屏请求失败:', err));
+                }
+            }
+            function exitFullscreen() {
+                const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+                if (exitMethod) {
+                    exitMethod.call(document).catch(err => console.log('退出全屏失败:', err));
+                }
+            }
+            function lockOrientation() {
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape-primary').catch(() => {
+                        // 如果锁定失败，尝试通用的landscape
+                        screen.orientation.lock('landscape').catch(() => console.log('方向锁定不支持'));
+                    });
+                }
+            }
+            function unlockOrientation() {
+                if (screen.orientation && screen.orientation.unlock) {
+                    screen.orientation.unlock();
+                }
+            }
+
+            function enterLockMode() {
+                if (isLockedMode) return;
+                isLockedMode = true;
+                lockBtn.textContent = '🔓 退出宝宝模式';
+                lockBtn.classList.add('active-mode');
+                unlockBtn.classList.add('visible');
+                rotateHint.classList.add('hidden');
+                // 请求全屏
+                requestFullscreen();
+                // 尝试锁定横屏
+                lockOrientation();
+                // 提示语音
+                if (soundEnabled) speak('宝宝模式已开启，长按右上角锁图标退出', 0.9);
+            }
+
+            function exitLockMode() {
+                if (!isLockedMode) return;
+                isLockedMode = false;
+                lockBtn.textContent = '🔒 宝宝模式';
+                lockBtn.classList.remove('active-mode');
+                unlockBtn.classList.remove('visible');
+                unlockOrientation();
+                exitFullscreen();
+                checkOrientation();
+                if (soundEnabled) speak('已退出宝宝模式', 0.9);
+            }
+
+            lockBtn.addEventListener('click', () => {
+                if (isLockedMode) {
+                    // 需要长按解锁，按钮点击无效（提示）
+                    if (soundEnabled) speak('请长按右上角的解锁图标来退出宝宝模式', 0.9);
+                } else {
+                    enterLockMode();
                 }
             });
 
-            // ============ 初始化 ============
+            // 解锁按钮：长按2秒退出
+            function startUnlockHold(e) {
+                e.preventDefault();
+                unlockBtn.classList.add('holding');
+                unlockHoldStart = Date.now();
+                if (unlockTimer) clearTimeout(unlockTimer);
+                unlockTimer = setTimeout(() => {
+                    exitLockMode();
+                    unlockBtn.classList.remove('holding');
+                }, 2000);
+            }
+            function cancelUnlockHold(e) {
+                e.preventDefault();
+                unlockBtn.classList.remove('holding');
+                if (unlockTimer) clearTimeout(unlockTimer);
+                unlockTimer = null;
+            }
+            unlockBtn.addEventListener('pointerdown', startUnlockHold);
+            unlockBtn.addEventListener('pointerup', cancelUnlockHold);
+            unlockBtn.addEventListener('pointerleave', cancelUnlockHold);
+            unlockBtn.addEventListener('pointercancel', cancelUnlockHold);
+            // 防止解锁按钮上的手势触发其他事件
+            unlockBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startUnlockHold(e); });
+            unlockBtn.addEventListener('touchend', cancelUnlockHold);
+            unlockBtn.addEventListener('touchcancel', cancelUnlockHold);
+
+            // 监听全屏变化（用户可能通过系统手势退出全屏）
+            function onFullscreenChange() {
+                const isFull = document.fullscreenElement || document.webkitFullscreenElement;
+                if (isLockedMode && !isFull) {
+                    // 意外退出全屏，尝试重新进入（但需要用户手势，可能不行，提示）
+                    if (soundEnabled) speak('请保持全屏哦，点击宝宝模式按钮重新进入', 0.9);
+                    // 暂时不自动退出锁定模式，但标记为非全屏
+                }
+                if (!isLockedMode && isFull) {
+                    // 非锁定模式下用户手动全屏，不做干涉
+                }
+            }
+            document.addEventListener('fullscreenchange', onFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
+            // 初始化检查横屏
+            checkOrientation();
+
+            // ============ 初始化游戏 ============
             function init() {
-                getAudioContext(); // 预初始化音频上下文
+                getAudioContext();
                 initBubbles();
                 updateStarDisplay();
-
-                // 欢迎语音（延迟一下）
-                setTimeout(() => {
-                    if (soundEnabled) {
-                        speak('欢迎来到泡泡学园！点击泡泡开始学习吧！', 0.85);
-                    }
-                }, 800);
-
-                // 定期检查泡泡数量
-                setInterval(() => {
-                    const activeCount = bubbles.filter(b => !b.el.classList.contains('popping') && b.el
-                        .parentNode).length;
-                    if (activeCount < maxBubbles && !isProcessing) {
-                        refillBubbles();
-                    }
-                }, 2000);
-
-                // 偶尔自动高亮一个泡泡引导点击（10秒无操作后）
+                setTimeout(()=>{ if(soundEnabled) speak('欢迎来到泡泡学园！点击泡泡开始学习吧！',0.85); },800);
+                setInterval(()=>{
+                    const activeCount = bubbles.filter(b=>!b.el.classList.contains('popping')&&b.el.parentNode).length;
+                    if(activeCount<maxBubbles && !isProcessing) refillBubbles();
+                },2000);
                 let lastInteraction = Date.now();
-                document.addEventListener('click', () => { lastInteraction = Date.now(); });
-                document.addEventListener('touchend', () => { lastInteraction = Date.now(); });
-                setInterval(() => {
-                    const inactiveTime = Date.now() - lastInteraction;
-                    if (inactiveTime > 10000 && bubbles.length > 0 && !isProcessing) {
-                        const activeBubbles = bubbles.filter(b => !b.el.classList.contains('popping') && b.el
-                            .parentNode);
-                        if (activeBubbles.length > 0) {
-                            const randomBubble = activeBubbles[Math.floor(Math.random() * activeBubbles
-                                .length)];
-                            randomBubble.el.style.transform = 'scale(1.2)';
-                            randomBubble.el.style.boxShadow =
-                                '0 0 35px rgba(255,180,40,0.7), 0 8px 32px rgba(0,0,0,0.1), inset 0 -4px 12px rgba(255,255,255,0.5)';
-                            setTimeout(() => {
-                                randomBubble.el.style.transform = '';
-                                randomBubble.el.style.boxShadow = '';
-                            }, 1200);
-                            lastInteraction = Date.now();
+                document.addEventListener('click',()=>lastInteraction=Date.now());
+                document.addEventListener('touchend',()=>lastInteraction=Date.now());
+                setInterval(()=>{
+                    if(Date.now()-lastInteraction>10000 && bubbles.length>0 && !isProcessing) {
+                        const activeBubbles = bubbles.filter(b=>!b.el.classList.contains('popping')&&b.el.parentNode);
+                        if(activeBubbles.length>0) {
+                            const rb = activeBubbles[Math.floor(Math.random()*activeBubbles.length)];
+                            rb.el.style.transform='scale(1.2)'; rb.el.style.boxShadow='0 0 35px rgba(255,180,40,0.7),0 8px 32px rgba(0,0,0,0.1)';
+                            setTimeout(()=>{ rb.el.style.transform=''; rb.el.style.boxShadow=''; },1200);
+                            lastInteraction=Date.now();
                         }
                     }
-                }, 10000);
+                },10000);
             }
-
-            // ============ 全局事件 ============
-            // 防止意外滚动和缩放
-            document.addEventListener('gesturestart', (e) => e.preventDefault());
-            document.addEventListener('gesturechange', (e) => e.preventDefault());
-            document.addEventListener('gestureend', (e) => e.preventDefault());
-
-            // 处理窗口大小变化
-            let resizeTimeout;
-            window.addEventListener('resize', () => {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(() => {
-                    adjustForScreen();
-                    repositionAllBubbles();
-                    refillBubbles();
-                }, 300);
-            });
-
-            // ============ 启动 ============
+            document.addEventListener('gesturestart', e=>e.preventDefault());
+            document.addEventListener('gesturechange', e=>e.preventDefault());
+            document.addEventListener('gestureend', e=>e.preventDefault());
             init();
-            console.log('🫧 泡泡学园已就绪！');
-            console.log('   🌈 点击彩色泡泡开始学习之旅');
-            console.log('   ⭐ 金色泡泡有惊喜奖励哦');
-            console.log('   📱 支持手机和平板触摸操作');
-            console.log('   🔊 语音播报功能已开启');
-            console.log('   👶 专为0-3岁宝宝设计');
         })();
     </script>
 </body>
