@@ -2,33 +2,47 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>泡泡学园 - 宝宝的神奇花园</title>
     <style>
-        :root { --safe-bottom: env(safe-area-inset-bottom, 16px); --safe-top: env(safe-area-inset-top, 12px); }
-        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
-        body {
-            width:100vw; height:100vh; height:100dvh; overflow:hidden;
-            font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
-            background:linear-gradient(180deg, #c9e8f5 0%, #e8d5f5 25%, #fce4ec 55%, #d4ecc8 78%, #b8dba0 100%);
-            touch-action:manipulation; position:relative;
+        :root {
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+            --safe-top: env(safe-area-inset-top, 12px);
         }
-        /* 模拟全屏时，body占满屏幕，隐藏可能的浏览器UI */
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+        html, body {
+            width: 100vw; height: 100vh; height: 100dvh;
+            overflow: hidden;
+            font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(180deg, #c9e8f5 0%, #e8d5f5 25%, #fce4ec 55%, #d4ecc8 78%, #b8dba0 100%);
+            touch-action: manipulation;
+            position: relative;
+        }
+        /* 模拟全屏：占满整个屏幕，覆盖所有浏览器UI */
         body.fake-fullscreen {
-            position: fixed; top:0; left:0; width:100%; height:100%; margin:0; overflow:hidden;
-            background:linear-gradient(180deg, #c9e8f5, #e8d5f5, #fce4ec, #d4ecc8, #b8dba0);
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(180deg, #c9e8f5, #e8d5f5, #fce4ec, #d4ecc8, #b8dba0);
+            margin: 0;
+            overflow: hidden;
+            z-index: 9999;
         }
         body.fake-fullscreen .game-container {
-            position:fixed; top:0; left:0; width:100%; height:100%; z-index:999;
-            background:linear-gradient(180deg, #c9e8f5, #e8d5f5, #fce4ec, #d4ecc8, #b8dba0);
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 10000;
+            background: inherit;
         }
-        body.fake-fullscreen .top-bar { margin-top:15px; }
-        body.fake-fullscreen .mode-bar { margin-bottom:15px; }
+        body.fake-fullscreen .top-bar { margin-top: var(--safe-top); }
+        body.fake-fullscreen .mode-bar { margin-bottom: var(--safe-bottom); }
         body.fake-fullscreen .unlock-btn { display:flex; }
 
         /* 旋转提示 */
-        .rotate-hint { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(10px); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:auto; transition:opacity 0.3s; }
+        .rotate-hint { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(10px); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:auto; transition:opacity 0.3s; }
         .rotate-hint.hidden { opacity:0; pointer-events:none; }
         .rotate-icon { font-size:90px; animation:rotatePhone 1.8s ease-in-out infinite; }
         @keyframes rotatePhone { 0%{transform:rotate(0deg)} 25%{transform:rotate(90deg)} 75%{transform:rotate(90deg)} 100%{transform:rotate(0deg)} }
@@ -36,9 +50,9 @@
         .rotate-sub { color:rgba(255,255,255,0.8); font-size:18px; margin-top:10px; }
 
         /* 解锁按钮 */
-        .unlock-btn { position:fixed; top:max(15px, env(safe-area-inset-top,15px)); right:15px; z-index:9998; width:50px; height:50px; border-radius:50%; background:rgba(0,0,0,0.25); backdrop-filter:blur(10px); border:2px solid rgba(255,255,255,0.5); color:white; font-size:22px; display:none; align-items:center; justify-content:center; pointer-events:auto; transition:background 0.2s; cursor:pointer; }
+        .unlock-btn { position:fixed; top:max(15px, var(--safe-top)); right:15px; z-index:99999; width:50px; height:50px; border-radius:50%; background:rgba(0,0,0,0.3); backdrop-filter:blur(10px); border:2px solid rgba(255,255,255,0.5); color:white; font-size:22px; display:none; align-items:center; justify-content:center; pointer-events:auto; transition:background 0.2s; cursor:pointer; }
         .unlock-btn.visible { display:flex; }
-        .unlock-btn.holding { background:rgba(255,80,80,0.6); border-color:#ff5252; }
+        .unlock-btn.holding { background:rgba(255,80,80,0.7); border-color:#ff5252; }
 
         /* 装饰元素 */
         .sky-clouds,.decor-flower { pointer-events:none; position:fixed; }
@@ -144,7 +158,8 @@
             window.addEventListener('resize',()=>{ adjustForScreen(); repositionAllBubbles(); });
             window.addEventListener('orientationchange',()=>{ setTimeout(()=>{ adjustForScreen(); repositionAllBubbles(); checkOrientation(); },400); });
 
-            // 数据定义（数字使用汉字保证发音准确）
+            const chineseNumbers = ['零','一','二','三','四','五','六','七','八','九','十'];
+            const englishNumbers = ['','one','two','three','four','five','six','seven','eight','nine','ten'];
             const dataAnimals = [
                 {emoji:'🐶',cn:'小狗',en:'dog',sound:'汪汪汪'},{emoji:'🐱',cn:'小猫',en:'cat',sound:'喵喵喵'},
                 {emoji:'🐰',cn:'兔子',en:'rabbit',sound:'蹦蹦跳'},{emoji:'🐮',cn:'奶牛',en:'cow',sound:'哞哞哞'},
@@ -163,9 +178,6 @@
                 {cn:'圆形',en:'circle',shapeType:'circle'},{cn:'方形',en:'square',shapeType:'square'},
                 {cn:'三角形',en:'triangle',shapeType:'triangle'},{cn:'星形',en:'star',shapeType:'star'}
             ];
-            // 数字数据：使用汉字数字，保证语音播报标准
-            const chineseNumbers = ['零','一','二','三','四','五','六','七','八','九','十'];
-            const englishNumbers = ['','one','two','three','four','five','six','seven','eight','nine','ten'];
             const dataNumbers = [];
             for(let i=1;i<=10;i++) dataNumbers.push({number:i, cn:chineseNumbers[i], en:englishNumbers[i]});
 
@@ -204,7 +216,6 @@
                 if(!soundEnabled)return; 
                 speechQueue=[]; window.speechSynthesis?.cancel(); isSpeaking=false;
                 let t='';
-                // 数字模式：播报中文数字 + 英文
                 if(d.number!==undefined) t = `${d.cn}！${d.en}`;
                 else if(d.colorHex) t = `${d.cn}！${d.en}`;
                 else if(d.shapeType) t = `${d.cn}！${d.en}`;
@@ -217,8 +228,7 @@
                 const colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff'];
                 for(let i=0;i<count;i++){
                     const p=document.createElement('div'); p.style.cssText=`position:fixed;pointer-events:none;z-index:200;left:${x}px;top:${y}px;width:8px;height:8px;background:${colors[i%colors.length]};border-radius:50%;animation:fly 0.6s ease-out forwards;--dx:${(Math.random()-0.5)*100}px;--dy:${(Math.random()-0.5)*100}px;`;
-                    document.body.appendChild(p);
-                    setTimeout(()=>p.remove(),700);
+                    document.body.appendChild(p); setTimeout(()=>p.remove(),700);
                 }
                 if(!document.getElementById('particle-keyframes')){
                     const style=document.createElement('style'); style.id='particle-keyframes';
@@ -229,8 +239,7 @@
             function spawnFlyingStar(x,y,target){
                 const r=target.getBoundingClientRect();
                 const star=document.createElement('div'); star.style.cssText=`position:fixed;pointer-events:none;z-index:250;font-size:28px;left:${x}px;top:${y}px;animation:flyStar 0.7s ease-out forwards;--tx:${r.left+r.width/2-x}px;--ty:${r.top+r.height/2-y}px;`;
-                star.textContent='⭐'; document.body.appendChild(star);
-                playStarSound(); setTimeout(()=>star.remove(),750);
+                star.textContent='⭐'; document.body.appendChild(star); playStarSound(); setTimeout(()=>star.remove(),750);
                 if(!document.getElementById('star-keyframes')){
                     const style=document.createElement('style'); style.id='star-keyframes';
                     style.textContent='@keyframes flyStar{to{transform:translate(var(--tx),var(--ty)) scale(0.5);opacity:0.7;}}';
@@ -295,7 +304,7 @@
             });
             soundBtn.addEventListener('click',()=>{ soundEnabled=!soundEnabled; soundBtn.textContent=soundEnabled?'🔊':'🔇'; if(!soundEnabled){ speechQueue=[]; window.speechSynthesis?.cancel(); } });
 
-            // ---------- 横屏全屏逻辑（优化版）----------
+            // ---------- 全屏逻辑（iPhone 优化） ----------
             function isLandscape(){ return window.innerWidth>window.innerHeight; }
             function checkOrientation(){
                 if(!isLockedMode) rotateHint.classList.toggle('hidden', isLandscape()||window.innerWidth>=768);
@@ -307,9 +316,9 @@
                 const el = document.documentElement;
                 const request = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
                 if(request){
-                    request.call(el).then(()=>{
+                    request.call(el).then(() => {
                         document.body.classList.remove('fake-fullscreen');
-                    }).catch(()=>{
+                    }).catch(() => {
                         enableFakeFullscreen();
                     });
                 } else {
@@ -317,38 +326,45 @@
                 }
             }
             function enableFakeFullscreen(){
+                // 1. 添加模拟全屏类
                 document.body.classList.add('fake-fullscreen');
+                // 2. 强制滚动以隐藏 iOS Safari 地址栏
+                window.scrollTo(0, 1);
+                // 3. 阻止页面滚动，防止工具栏再次出现
+                document.body.addEventListener('touchmove', preventScroll, { passive: false });
+                // 4. 显示解锁按钮
                 unlockBtn.classList.add('visible');
                 if(soundEnabled) speak('已进入宝宝模式，长按右上角解锁退出',0.9);
+            }
+            function preventScroll(e) {
+                e.preventDefault();
             }
             function exitFullscreen(){
                 const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
                 if(exit) exit.call(document).catch(()=>{});
                 document.body.classList.remove('fake-fullscreen');
                 unlockBtn.classList.remove('visible');
-                if(isLockedMode) unlockBtn.classList.add('visible'); // 保持按钮可见
+                document.body.removeEventListener('touchmove', preventScroll);
             }
             function lockOrientation(){ if(screen.orientation&&screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{}); }
             function unlockOrientation(){ if(screen.orientation&&screen.orientation.unlock) screen.orientation.unlock(); }
 
             function enterLockMode(){
-                if(isLockedMode)return; isLockedMode=true;
+                if(isLockedMode)return;
+                isLockedMode=true;
                 lockBtn.textContent='🔓 退出宝宝模式'; lockBtn.classList.add('active-mode');
-                unlockBtn.classList.add('visible'); rotateHint.classList.add('hidden');
-                requestFullscreen(); lockOrientation();
-                // 2秒后检查是否成功全屏，否则强制模拟
-                setTimeout(()=>{
-                    if(isLockedMode && !document.fullscreenElement && !document.webkitFullscreenElement && !document.body.classList.contains('fake-fullscreen')){
-                        enableFakeFullscreen();
-                    }
-                },2000);
+                rotateHint.classList.add('hidden');
+                requestFullscreen();
+                lockOrientation();
             }
             function exitLockMode(){
-                if(!isLockedMode)return; isLockedMode=false;
+                if(!isLockedMode)return;
+                isLockedMode=false;
                 lockBtn.textContent='🔒 宝宝模式'; lockBtn.classList.remove('active-mode');
-                unlockOrientation(); exitFullscreen(); document.body.classList.remove('fake-fullscreen');
-                unlockBtn.classList.remove('visible');
-                checkOrientation(); speak('已退出宝宝模式',0.9);
+                unlockOrientation();
+                exitFullscreen();
+                checkOrientation();
+                speak('已退出宝宝模式',0.9);
             }
             lockBtn.addEventListener('click',()=>{ if(isLockedMode) speak('请长按右上角解锁',0.9); else enterLockMode(); });
             function startHold(e){ e.preventDefault(); unlockBtn.classList.add('holding'); unlockTimer=setTimeout(exitLockMode,2000); }
