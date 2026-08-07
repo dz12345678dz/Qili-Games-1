@@ -619,7 +619,7 @@
             adjustForScreen();
             window.addEventListener('resize', () => { adjustForScreen(); repositionAllBubbles(); });
 
-            // ============ 数据定义（扩充版） ============
+            // ============ 数据定义 ============
             const dataAnimals = [
                 { emoji: '🐶', cn: '小狗', en: 'dog', sound: '汪汪汪' },
                 { emoji: '🐱', cn: '小猫', en: 'cat', sound: '喵喵喵' },
@@ -766,20 +766,20 @@
                 { emoji: '🟠', cn: '珊瑚色', en: 'coral', colorHex: '#ff7f50' },
                 { emoji: '🟢', cn: '薄荷绿', en: 'mint', colorHex: '#98ff98' },
             ];
-            // 形状数据（仅使用可内联样式实现的安全形状，新增的改为现有类型变体）
+            // 形状数据（已修正：删除心形/新增形状，方形→正方形，增加长方形、直角三角形）
             const dataShapes = [
                 { cn: '圆形', en: 'circle', shapeType: 'circle' },
-                { cn: '方形', en: 'square', shapeType: 'square' },
+                { cn: '正方形', en: 'square', shapeType: 'square' },
+                { cn: '长方形', en: 'rectangle', shapeType: 'rectangle' },
                 { cn: '三角形', en: 'triangle', shapeType: 'triangle' },
+                { cn: '直角三角形', en: 'right triangle', shapeType: 'rightTriangle' },
                 { cn: '星形', en: 'star', shapeType: 'star' },
-                { cn: '心形', en: 'heart', shapeType: 'heart' },
                 { cn: '菱形', en: 'diamond', shapeType: 'diamond' },
                 { cn: '五边形', en: 'pentagon', shapeType: 'pentagon' },
                 { cn: '六边形', en: 'hexagon', shapeType: 'hexagon' },
                 { cn: '椭圆形', en: 'oval', shapeType: 'oval' },
                 { cn: '梯形', en: 'trapezoid', shapeType: 'trapezoid' },
                 { cn: '平行四边形', en: 'parallelogram', shapeType: 'parallelogram' },
-                { cn: '十字形', en: 'cross', shapeType: 'cross' },
             ];
             const dataFurniture = [
                 { emoji: '🪑', cn: '椅子', en: 'chair' },
@@ -1179,17 +1179,16 @@
                 switch (shapeType) {
                     case 'circle': return `width:${s};height:${s};border-radius:50%;background:#ff8a80;box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
                     case 'square': return `width:${s};height:${s};border-radius:6px;background:#82b1ff;box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
+                    case 'rectangle': return `width:${s};height:${parseInt(s)*0.6}px;border-radius:4px;background:#82b1ff;box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
                     case 'triangle': return `width:0;height:0;border-left:${size*0.5}px solid transparent;border-right:${size*0.5}px solid transparent;border-bottom:${size}px solid #69f0ae;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.12));`;
+                    case 'rightTriangle': return `width:0;height:0;border-bottom:${size}px solid #69f0ae;border-right:${size}px solid transparent;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.12));`;
                     case 'star': return `width:${s};height:${s};background:#ffd740;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
-                    case 'heart': return `width:${s};height:${s};background:#ff4081;clip-path:path('M50,30 C50,10 10,10 10,35 C10,60 50,85 50,85 C50,85 90,60 90,35 C90,10 50,10 50,30Z');box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
                     case 'diamond': return `width:${s};height:${s};background:#b388ff;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
                     case 'pentagon': return `width:${s};height:${s};background:#ffab40;clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
                     case 'hexagon': return `width:${s};height:${s};background:#80cbc4;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
-                    // 新增形状的CSS（安全内联样式）
                     case 'oval': return `width:${s};height:${parseInt(s)*0.7}px;border-radius:50%;background:#ff8a80;box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
                     case 'trapezoid': return `width:${s};height:0;border-bottom:${s} solid #82b1ff;border-left:${parseInt(s)*0.3}px solid transparent;border-right:${parseInt(s)*0.3}px solid transparent;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.12));`;
                     case 'parallelogram': return `width:${s};height:${parseInt(s)*0.6}px;background:#69f0ae;transform:skewX(-20deg);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
-                    case 'cross': return `width:${s};height:${s};position:relative;background:transparent;box-shadow:none;`; // 简单占位，不显示复杂伪元素
                     default: return `width:${s};height:${s};border-radius:50%;background:#ccc;`;
                 }
             }
