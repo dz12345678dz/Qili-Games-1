@@ -646,6 +646,12 @@
             <button class="mode-btn" data-mode="numbers">
                 <span class="mode-emoji">🔢</span> 数字
             </button>
+            <button class="mode-btn" data-mode="letters">
+                <span class="mode-emoji">🔤</span> 字母
+            </button>
+            <button class="mode-btn" data-mode="pinyin">
+                <span class="mode-emoji">📖</span> 拼音
+            </button>
             <button class="mode-btn" data-mode="colors">
                 <span class="mode-emoji">🌈</span> 颜色
             </button>
@@ -657,6 +663,9 @@
             </button>
             <button class="mode-btn" data-mode="vehicles">
                 <span class="mode-emoji">🚗</span> 汽车
+            </button>
+            <button class="mode-btn" data-mode="daily_items">
+                <span class="mode-emoji">🧴</span> 生活用品
             </button>
         </div>
     </div>
@@ -679,7 +688,7 @@
             const lockBtn = document.getElementById('lockBtn');
 
             let totalStars = 0;
-            let currentMode = 'mixed'; // mixed, animals, fruits, vegetables, numbers, colors, shapes, furniture, vehicles
+            let currentMode = 'mixed';
             let soundEnabled = true;
             let bubbles = [];
             let maxBubbles = 5;
@@ -687,7 +696,7 @@
             let audioCtx = null;
             let speechQueue = [];
             let isSpeaking = false;
-            let isLockedMode = false;       // 是否处于宝宝模式（全屏+锁定）
+            let isLockedMode = false;
             let unlockTimer = null;
             let unlockHoldStart = 0;
 
@@ -761,6 +770,32 @@
                 { emoji: '🧄', cn: '大蒜', en: 'garlic' },
                 { emoji: '🍄', cn: '蘑菇', en: 'mushroom' },
             ];
+            const dataLetters = [];
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i);
+                dataLetters.push({
+                    emoji: `🔤`,
+                    displayText: letter,
+                    cn: `字母 ${letter}`,
+                    en: letter
+                });
+            }
+            const dataPinyin = [
+                { emoji: '📖', displayText: 'a', cn: '拼音 a', en: 'a' },
+                { emoji: '📖', displayText: 'o', cn: '拼音 o', en: 'o' },
+                { emoji: '📖', displayText: 'e', cn: '拼音 e', en: 'e' },
+                { emoji: '📖', displayText: 'i', cn: '拼音 i', en: 'i' },
+                { emoji: '📖', displayText: 'u', cn: '拼音 u', en: 'u' },
+                { emoji: '📖', displayText: 'ü', cn: '拼音 ü', en: 'ü' },
+                { emoji: '📖', displayText: 'b', cn: '拼音 b', en: 'b' },
+                { emoji: '📖', displayText: 'p', cn: '拼音 p', en: 'p' },
+                { emoji: '📖', displayText: 'm', cn: '拼音 m', en: 'm' },
+                { emoji: '📖', displayText: 'f', cn: '拼音 f', en: 'f' },
+                { emoji: '📖', displayText: 'd', cn: '拼音 d', en: 'd' },
+                { emoji: '📖', displayText: 't', cn: '拼音 t', en: 't' },
+                { emoji: '📖', displayText: 'n', cn: '拼音 n', en: 'n' },
+                { emoji: '📖', displayText: 'l', cn: '拼音 l', en: 'l' },
+            ];
             const dataColors = [
                 { emoji: '🔴', cn: '红色', en: 'red', colorHex: '#ef5350' },
                 { emoji: '🔵', cn: '蓝色', en: 'blue', colorHex: '#42a5f5' },
@@ -809,6 +844,18 @@
                 { emoji: '🚂', cn: '火车', en: 'train' },
                 { emoji: '⛵', cn: '帆船', en: 'sailboat' },
             ];
+            const dataDailyItems = [
+                { emoji: '🧴', cn: '洗发水', en: 'shampoo' },
+                { emoji: '🪥', cn: '牙刷', en: 'toothbrush' },
+                { emoji: '🪒', cn: '剃须刀', en: 'razor' },
+                { emoji: '🧻', cn: '卫生纸', en: 'toilet paper' },
+                { emoji: '🧼', cn: '肥皂', en: 'soap' },
+                { emoji: '🧹', cn: '扫帚', en: 'broom' },
+                { emoji: '🧺', cn: '洗衣篮', en: 'laundry basket' },
+                { emoji: '🪣', cn: '水桶', en: 'bucket' },
+                { emoji: '🧯', cn: '灭火器', en: 'fire extinguisher' },
+                { emoji: '🪜', cn: '梯子', en: 'ladder' },
+            ];
             const dataNumbers = [];
             for (let i = 1; i <= 10; i++) {
                 const fruitEmojis = ['🍎', '🍌', '🍊', '🍓', '🍉', '🍇', '🥝', '🍑', '🍒', '🥭'];
@@ -826,20 +873,26 @@
                     case 'animals': return [...dataAnimals];
                     case 'fruits': return [...dataFruits];
                     case 'vegetables': return [...dataVegetables];
+                    case 'letters': return [...dataLetters];
+                    case 'pinyin': return [...dataPinyin];
                     case 'numbers': return [...dataNumbers];
                     case 'colors': return [...dataColors];
                     case 'shapes': return [...dataShapes];
                     case 'furniture': return [...dataFurniture];
                     case 'vehicles': return [...dataVehicles];
+                    case 'daily_items': return [...dataDailyItems];
                     default: return [
                         ...dataAnimals.map(d => ({...d, category: 'animal'})),
                         ...dataFruits.map(d => ({...d, category: 'fruit'})),
                         ...dataVegetables.map(d => ({...d, category: 'vegetable'})),
+                        ...dataLetters.map(d => ({...d, category: 'letter'})),
+                        ...dataPinyin.map(d => ({...d, category: 'pinyin'})),
                         ...dataNumbers.map(d => ({...d, category: 'number'})),
                         ...dataColors.map(d => ({...d, category: 'color'})),
                         ...dataShapes.map(d => ({...d, category: 'shape'})),
                         ...dataFurniture.map(d => ({...d, category: 'furniture'})),
                         ...dataVehicles.map(d => ({...d, category: 'vehicle'})),
+                        ...dataDailyItems.map(d => ({...d, category: 'daily_item'})),
                     ];
                 }
             }
@@ -1083,6 +1136,7 @@
                 const chosenColor = softColors[Math.floor(Math.random() * softColors.length)];
                 el.style.setProperty('--bubble-color', chosenColor);
 
+                // 根据数据类型渲染不同内容
                 if (itemData.category === 'shape' || itemData.shapeType) {
                     const shapeDiv = document.createElement('div');
                     shapeDiv.className = 'bubble-shape';
@@ -1112,6 +1166,14 @@
                         position: relative;
                     `;
                     el.appendChild(colorDot);
+                } else if (itemData.displayText) {
+                    // 字母或拼音显示文字
+                    const textSpan = document.createElement('span');
+                    textSpan.className = 'bubble-emoji';
+                    textSpan.textContent = itemData.displayText;
+                    textSpan.style.fontSize = (size * 0.5) + 'px';
+                    textSpan.style.fontWeight = 'bold';
+                    el.appendChild(textSpan);
                 } else {
                     const emojiSpan = document.createElement('span');
                     emojiSpan.className = 'bubble-emoji';
@@ -1257,10 +1319,13 @@
                     fruits: '水果乐园！看看有哪些水果',
                     vegetables: '蔬菜园地！多吃蔬菜身体好',
                     numbers: '数字天地！一起来数数',
+                    letters: '字母王国！认识二十六个字母',
+                    pinyin: '拼音小屋！学习拼音发音',
                     colors: '彩虹颜色！认识美丽的颜色',
                     shapes: '形状王国！发现有趣的形状',
                     furniture: '家具世界！认识家里的物品',
                     vehicles: '汽车总动员！看看有哪些车',
+                    daily_items: '生活用品！日常物品认知',
                 };
                 if (soundEnabled) speak(modeNames[mode] || '切换模式', 0.9);
             });
