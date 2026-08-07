@@ -33,7 +33,6 @@
             position: relative;
         }
 
-        /* 解锁按钮 (全屏时显示) */
         .unlock-btn {
             position: fixed;
             top: max(15px, env(safe-area-inset-top, 15px));
@@ -63,7 +62,6 @@
             border-color: #ff5252;
         }
 
-        /* 装饰样式保持不变 */
         .sky-clouds {
             position: fixed;
             top: 0;
@@ -542,20 +540,14 @@
 </head>
 <body>
 
-    <!-- 解锁按钮（全屏时出现） -->
     <div class="unlock-btn" id="unlockBtn">🔓</div>
 
-    <!-- 天空云朵装饰 -->
     <div class="sky-clouds">
         <div class="cloud cloud1"></div>
         <div class="cloud cloud2"></div>
         <div class="cloud cloud3"></div>
     </div>
-
-    <!-- 草地装饰 -->
     <div class="ground-decoration"></div>
-
-    <!-- 装饰小花 -->
     <div class="decor-flower" style="bottom:14%;left:8%;animation-delay:0s;">🌼</div>
     <div class="decor-flower" style="bottom:12%;left:22%;animation-delay:1.2s;font-size:22px;">🌸</div>
     <div class="decor-flower" style="bottom:15%;right:12%;animation-delay:2.5s;">🌻</div>
@@ -563,9 +555,7 @@
     <div class="decor-flower" style="bottom:16%;left:40%;animation-delay:3s;font-size:20px;">💐</div>
     <div class="decor-flower" style="bottom:13%;right:38%;animation-delay:1.8s;font-size:26px;">🌺</div>
 
-    <!-- 主容器 -->
     <div class="game-container" id="gameContainer">
-        <!-- 顶部状态栏 -->
         <div class="top-bar" id="topBar">
             <span class="star-icon">⭐</span>
             <div class="star-display">
@@ -576,56 +566,27 @@
             <button class="lock-btn" id="lockBtn">🔒 宝宝模式</button>
         </div>
 
-        <!-- 泡泡区域 -->
         <div class="bubble-area" id="bubbleArea"></div>
 
-        <!-- 模式切换栏 -->
         <div class="mode-bar" id="modeBar">
-            <button class="mode-btn active" data-mode="mixed">
-                <span class="mode-emoji">🎪</span> 混合
-            </button>
-            <button class="mode-btn" data-mode="animals">
-                <span class="mode-emoji">🐶</span> 动物
-            </button>
-            <button class="mode-btn" data-mode="fruits">
-                <span class="mode-emoji">🍎</span> 水果
-            </button>
-            <button class="mode-btn" data-mode="vegetables">
-                <span class="mode-emoji">🥦</span> 蔬菜
-            </button>
-            <button class="mode-btn" data-mode="numbers">
-                <span class="mode-emoji">🔢</span> 数字
-            </button>
-            <button class="mode-btn" data-mode="letters">
-                <span class="mode-emoji">🔤</span> 字母
-            </button>
-            <button class="mode-btn" data-mode="pinyin">
-                <span class="mode-emoji">📖</span> 拼音
-            </button>
-            <button class="mode-btn" data-mode="colors">
-                <span class="mode-emoji">🌈</span> 颜色
-            </button>
-            <button class="mode-btn" data-mode="shapes">
-                <span class="mode-emoji">⭐</span> 形状
-            </button>
-            <button class="mode-btn" data-mode="furniture">
-                <span class="mode-emoji">🪑</span> 家具
-            </button>
-            <button class="mode-btn" data-mode="vehicles">
-                <span class="mode-emoji">🚗</span> 汽车
-            </button>
-            <button class="mode-btn" data-mode="daily_items">
-                <span class="mode-emoji">🧴</span> 生活用品
-            </button>
+            <button class="mode-btn active" data-mode="mixed"><span class="mode-emoji">🎪</span> 混合</button>
+            <button class="mode-btn" data-mode="animals"><span class="mode-emoji">🐶</span> 动物</button>
+            <button class="mode-btn" data-mode="fruits"><span class="mode-emoji">🍎</span> 水果</button>
+            <button class="mode-btn" data-mode="vegetables"><span class="mode-emoji">🥦</span> 蔬菜</button>
+            <button class="mode-btn" data-mode="numbers"><span class="mode-emoji">🔢</span> 数字</button>
+            <button class="mode-btn" data-mode="letters"><span class="mode-emoji">🔤</span> 字母</button>
+            <button class="mode-btn" data-mode="pinyin"><span class="mode-emoji">📖</span> 拼音</button>
+            <button class="mode-btn" data-mode="colors"><span class="mode-emoji">🌈</span> 颜色</button>
+            <button class="mode-btn" data-mode="shapes"><span class="mode-emoji">⭐</span> 形状</button>
+            <button class="mode-btn" data-mode="furniture"><span class="mode-emoji">🪑</span> 家具</button>
+            <button class="mode-btn" data-mode="vehicles"><span class="mode-emoji">🚗</span> 汽车</button>
+            <button class="mode-btn" data-mode="daily_items"><span class="mode-emoji">🧴</span> 生活用品</button>
         </div>
     </div>
-
-    <!-- 庆祝层 -->
     <div class="celebrate-overlay" id="celebrateOverlay"></div>
 
     <script>
         (function() {
-            // ============ 游戏核心 ============
             const bubbleArea = document.getElementById('bubbleArea');
             const starCountEl = document.getElementById('starCount');
             const levelIndicator = document.getElementById('levelIndicator');
@@ -656,12 +617,9 @@
                 else maxBubbles = 7;
             }
             adjustForScreen();
-            window.addEventListener('resize', () => {
-                adjustForScreen();
-                repositionAllBubbles();
-            });
+            window.addEventListener('resize', () => { adjustForScreen(); repositionAllBubbles(); });
 
-            // ============ 数据定义 ============
+            // ============ 数据定义（扩充版） ============
             const dataAnimals = [
                 { emoji: '🐶', cn: '小狗', en: 'dog', sound: '汪汪汪' },
                 { emoji: '🐱', cn: '小猫', en: 'cat', sound: '喵喵喵' },
@@ -679,6 +637,14 @@
                 { emoji: '🐨', cn: '考拉', en: 'koala', sound: '爱睡觉的考拉' },
                 { emoji: '🦁', cn: '狮子', en: 'lion', sound: '吼吼吼' },
                 { emoji: '🐯', cn: '老虎', en: 'tiger', sound: '凶猛的老虎' },
+                { emoji: '🐸', cn: '青蛙', en: 'frog', sound: '呱呱呱' },
+                { emoji: '🐒', cn: '猴子', en: 'monkey', sound: '吱吱吱' },
+                { emoji: '🐦', cn: '小鸟', en: 'bird', sound: '叽叽喳喳' },
+                { emoji: '🐟', cn: '小鱼', en: 'fish', sound: '游来游去' },
+                { emoji: '🦋', cn: '蝴蝶', en: 'butterfly', sound: '翩翩飞舞' },
+                { emoji: '🐢', cn: '乌龟', en: 'turtle', sound: '慢慢爬' },
+                { emoji: '🐊', cn: '鳄鱼', en: 'crocodile', sound: '大嘴巴鳄鱼' },
+                { emoji: '🦒', cn: '长颈鹿', en: 'giraffe', sound: '长脖子的长颈鹿' },
             ];
             const dataFruits = [
                 { emoji: '🍎', cn: '苹果', en: 'apple' },
@@ -696,6 +662,13 @@
                 { emoji: '🍐', cn: '梨', en: 'pear' },
                 { emoji: '🍈', cn: '甜瓜', en: 'melon' },
                 { emoji: '🫐', cn: '蓝莓', en: 'blueberry' },
+                { emoji: '🍅', cn: '圣女果', en: 'cherry tomato' },
+                { emoji: '🥥', cn: '椰子', en: 'coconut' },
+                { emoji: '🥑', cn: '牛油果', en: 'avocado' },
+                { emoji: '🍆', cn: '黑布林', en: 'plum' },
+                { emoji: '🍊', cn: '橘子', en: 'tangerine' },
+                { emoji: '🍏', cn: '青苹果', en: 'green apple' },
+                { emoji: '🫒', cn: '橄榄', en: 'olive' },
             ];
             const dataVegetables = [
                 { emoji: '🥦', cn: '西兰花', en: 'broccoli' },
@@ -710,8 +683,15 @@
                 { emoji: '🥬', cn: '生菜', en: 'lettuce' },
                 { emoji: '🧄', cn: '大蒜', en: 'garlic' },
                 { emoji: '🍄', cn: '蘑菇', en: 'mushroom' },
+                { emoji: '🥗', cn: '羽衣甘蓝', en: 'kale' },
+                { emoji: '🥜', cn: '花生', en: 'peanut' },
+                { emoji: '🫘', cn: '豆子', en: 'bean' },
+                { emoji: '🥬', cn: '白菜', en: 'cabbage' },
+                { emoji: '🥒', cn: '西葫芦', en: 'zucchini' },
+                { emoji: '🌶️', cn: '辣椒', en: 'chili pepper' },
+                { emoji: '🥬', cn: '菠菜', en: 'spinach' },
+                { emoji: '🧅', cn: '红葱头', en: 'shallot' },
             ];
-            // 字母模块：大小写各26个，共52个
             const dataLetters = [];
             for (let i = 65; i <= 90; i++) {
                 const upper = String.fromCharCode(i);
@@ -719,14 +699,7 @@
                 dataLetters.push({ emoji: '🔤', displayText: upper, cn: upper, en: upper });
                 dataLetters.push({ emoji: '🔤', displayText: lower, cn: lower, en: lower });
             }
-            // 拼音模块：cn 去掉“拼音”前缀
             const dataPinyin = [
-                { emoji: '📖', displayText: 'a', cn: 'a', en: 'a' },
-                { emoji: '📖', displayText: 'o', cn: 'o', en: 'o' },
-                { emoji: '📖', displayText: 'e', cn: 'e', en: 'e' },
-                { emoji: '📖', displayText: 'i', cn: 'i', en: 'i' },
-                { emoji: '📖', displayText: 'u', cn: 'u', en: 'u' },
-                { emoji: '📖', displayText: 'ü', cn: 'ü', en: 'ü' },
                 { emoji: '📖', displayText: 'b', cn: 'b', en: 'b' },
                 { emoji: '📖', displayText: 'p', cn: 'p', en: 'p' },
                 { emoji: '📖', displayText: 'm', cn: 'm', en: 'm' },
@@ -735,6 +708,45 @@
                 { emoji: '📖', displayText: 't', cn: 't', en: 't' },
                 { emoji: '📖', displayText: 'n', cn: 'n', en: 'n' },
                 { emoji: '📖', displayText: 'l', cn: 'l', en: 'l' },
+                { emoji: '📖', displayText: 'g', cn: 'g', en: 'g' },
+                { emoji: '📖', displayText: 'k', cn: 'k', en: 'k' },
+                { emoji: '📖', displayText: 'h', cn: 'h', en: 'h' },
+                { emoji: '📖', displayText: 'j', cn: 'j', en: 'j' },
+                { emoji: '📖', displayText: 'q', cn: 'q', en: 'q' },
+                { emoji: '📖', displayText: 'x', cn: 'x', en: 'x' },
+                { emoji: '📖', displayText: 'zh', cn: 'zh', en: 'zh' },
+                { emoji: '📖', displayText: 'ch', cn: 'ch', en: 'ch' },
+                { emoji: '📖', displayText: 'sh', cn: 'sh', en: 'sh' },
+                { emoji: '📖', displayText: 'r', cn: 'r', en: 'r' },
+                { emoji: '📖', displayText: 'z', cn: 'z', en: 'z' },
+                { emoji: '📖', displayText: 'c', cn: 'c', en: 'c' },
+                { emoji: '📖', displayText: 's', cn: 's', en: 's' },
+                { emoji: '📖', displayText: 'y', cn: 'y', en: 'y' },
+                { emoji: '📖', displayText: 'w', cn: 'w', en: 'w' },
+                { emoji: '📖', displayText: 'a', cn: 'a', en: 'a' },
+                { emoji: '📖', displayText: 'o', cn: 'o', en: 'o' },
+                { emoji: '📖', displayText: 'e', cn: 'e', en: 'e' },
+                { emoji: '📖', displayText: 'i', cn: 'i', en: 'i' },
+                { emoji: '📖', displayText: 'u', cn: 'u', en: 'u' },
+                { emoji: '📖', displayText: 'ü', cn: 'ü', en: 'ü' },
+                { emoji: '📖', displayText: 'ai', cn: 'ai', en: 'ai' },
+                { emoji: '📖', displayText: 'ei', cn: 'ei', en: 'ei' },
+                { emoji: '📖', displayText: 'ui', cn: 'ui', en: 'ui' },
+                { emoji: '📖', displayText: 'ao', cn: 'ao', en: 'ao' },
+                { emoji: '📖', displayText: 'ou', cn: 'ou', en: 'ou' },
+                { emoji: '📖', displayText: 'iu', cn: 'iu', en: 'iu' },
+                { emoji: '📖', displayText: 'ie', cn: 'ie', en: 'ie' },
+                { emoji: '📖', displayText: 'üe', cn: 'üe', en: 'üe' },
+                { emoji: '📖', displayText: 'er', cn: 'er', en: 'er' },
+                { emoji: '📖', displayText: 'an', cn: 'an', en: 'an' },
+                { emoji: '📖', displayText: 'en', cn: 'en', en: 'en' },
+                { emoji: '📖', displayText: 'in', cn: 'in', en: 'in' },
+                { emoji: '📖', displayText: 'un', cn: 'un', en: 'un' },
+                { emoji: '📖', displayText: 'ün', cn: 'ün', en: 'ün' },
+                { emoji: '📖', displayText: 'ang', cn: 'ang', en: 'ang' },
+                { emoji: '📖', displayText: 'eng', cn: 'eng', en: 'eng' },
+                { emoji: '📖', displayText: 'ing', cn: 'ing', en: 'ing' },
+                { emoji: '📖', displayText: 'ong', cn: 'ong', en: 'ong' },
             ];
             const dataColors = [
                 { emoji: '🔴', cn: '红色', en: 'red', colorHex: '#ef5350' },
@@ -749,7 +761,12 @@
                 { emoji: '⚫', cn: '黑色', en: 'black', colorHex: '#424242' },
                 { emoji: '🩶', cn: '灰色', en: 'grey', colorHex: '#9e9e9e' },
                 { emoji: '🩵', cn: '青色', en: 'cyan', colorHex: '#00bcd4' },
+                { emoji: '🟡', cn: '金色', en: 'gold', colorHex: '#ffd700' },
+                { emoji: '⚪', cn: '银色', en: 'silver', colorHex: '#c0c0c0' },
+                { emoji: '🟠', cn: '珊瑚色', en: 'coral', colorHex: '#ff7f50' },
+                { emoji: '🟢', cn: '薄荷绿', en: 'mint', colorHex: '#98ff98' },
             ];
+            // 形状数据（仅使用可内联样式实现的安全形状，新增的改为现有类型变体）
             const dataShapes = [
                 { cn: '圆形', en: 'circle', shapeType: 'circle' },
                 { cn: '方形', en: 'square', shapeType: 'square' },
@@ -759,6 +776,10 @@
                 { cn: '菱形', en: 'diamond', shapeType: 'diamond' },
                 { cn: '五边形', en: 'pentagon', shapeType: 'pentagon' },
                 { cn: '六边形', en: 'hexagon', shapeType: 'hexagon' },
+                { cn: '椭圆形', en: 'oval', shapeType: 'oval' },
+                { cn: '梯形', en: 'trapezoid', shapeType: 'trapezoid' },
+                { cn: '平行四边形', en: 'parallelogram', shapeType: 'parallelogram' },
+                { cn: '十字形', en: 'cross', shapeType: 'cross' },
             ];
             const dataFurniture = [
                 { emoji: '🪑', cn: '椅子', en: 'chair' },
@@ -771,6 +792,12 @@
                 { emoji: '💡', cn: '灯', en: 'lamp' },
                 { emoji: '🖼️', cn: '画框', en: 'picture frame' },
                 { emoji: '📚', cn: '书架', en: 'bookshelf' },
+                { emoji: '🪟', cn: '窗帘', en: 'curtain' },
+                { emoji: '🪜', cn: '梯子', en: 'ladder' },
+                { emoji: '🧸', cn: '玩具熊', en: 'teddy bear' },
+                { emoji: '🕰️', cn: '时钟', en: 'clock' },
+                { emoji: '🪴', cn: '盆栽', en: 'potted plant' },
+                { emoji: '🧺', cn: '洗衣篮', en: 'laundry basket' },
             ];
             const dataVehicles = [
                 { emoji: '🚗', cn: '小汽车', en: 'car' },
@@ -783,6 +810,12 @@
                 { emoji: '🚁', cn: '直升机', en: 'helicopter' },
                 { emoji: '🚂', cn: '火车', en: 'train' },
                 { emoji: '⛵', cn: '帆船', en: 'sailboat' },
+                { emoji: '🚲', cn: '自行车', en: 'bicycle' },
+                { emoji: '🛴', cn: '滑板车', en: 'scooter' },
+                { emoji: '🚀', cn: '火箭', en: 'rocket' },
+                { emoji: '🚢', cn: '轮船', en: 'ship' },
+                { emoji: '🚕', cn: '出租车', en: 'taxi' },
+                { emoji: '🛻', cn: '卡车', en: 'truck' },
             ];
             const dataDailyItems = [
                 { emoji: '🧴', cn: '洗发水', en: 'shampoo' },
@@ -795,15 +828,24 @@
                 { emoji: '🪣', cn: '水桶', en: 'bucket' },
                 { emoji: '🧯', cn: '灭火器', en: 'fire extinguisher' },
                 { emoji: '🪜', cn: '梯子', en: 'ladder' },
+                { emoji: '🧤', cn: '手套', en: 'gloves' },
+                { emoji: '🧣', cn: '围巾', en: 'scarf' },
+                { emoji: '👒', cn: '帽子', en: 'hat' },
+                { emoji: '🕶️', cn: '墨镜', en: 'sunglasses' },
+                { emoji: '⌚', cn: '手表', en: 'watch' },
+                { emoji: '📱', cn: '手机', en: 'mobile phone' },
+                { emoji: '🔑', cn: '钥匙', en: 'key' },
+                { emoji: '💼', cn: '公文包', en: 'briefcase' },
             ];
             const dataNumbers = [];
-            for (let i = 1; i <= 10; i++) {
-                const fruitEmojis = ['🍎', '🍌', '🍊', '🍓', '🍉', '🍇', '🥝', '🍑', '🍒', '🥭'];
+            const numberEmojis = ['🍎', '🍌', '🍊', '🍓', '🍉', '🍇', '🥝', '🍑', '🍒', '🥭', '🍍', '🍋', '🍐', '🍈', '🫐', '🥑', '🥥', '🥜', '🍞', '🧀'];
+            for (let i = 1; i <= 20; i++) {
                 dataNumbers.push({
                     number: i,
-                    displayEmoji: fruitEmojis[i - 1],
+                    displayEmoji: numberEmojis[i - 1],
                     cn: `${i}`,
-                    en: ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][i],
+                    en: ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+                         'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'][i],
                     count: i,
                 });
             }
@@ -1076,7 +1118,6 @@
                 const chosenColor = softColors[Math.floor(Math.random() * softColors.length)];
                 el.style.setProperty('--bubble-color', chosenColor);
 
-                // 根据数据类型渲染不同内容
                 if (itemData.category === 'shape' || itemData.shapeType) {
                     const shapeDiv = document.createElement('div');
                     shapeDiv.className = 'bubble-shape';
@@ -1107,7 +1148,6 @@
                     `;
                     el.appendChild(colorDot);
                 } else if (itemData.displayText) {
-                    // 字母或拼音显示文字
                     const textSpan = document.createElement('span');
                     textSpan.className = 'bubble-emoji';
                     textSpan.textContent = itemData.displayText;
@@ -1145,6 +1185,11 @@
                     case 'diamond': return `width:${s};height:${s};background:#b388ff;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
                     case 'pentagon': return `width:${s};height:${s};background:#ffab40;clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
                     case 'hexagon': return `width:${s};height:${s};background:#80cbc4;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
+                    // 新增形状的CSS（安全内联样式）
+                    case 'oval': return `width:${s};height:${parseInt(s)*0.7}px;border-radius:50%;background:#ff8a80;box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
+                    case 'trapezoid': return `width:${s};height:0;border-bottom:${s} solid #82b1ff;border-left:${parseInt(s)*0.3}px solid transparent;border-right:${parseInt(s)*0.3}px solid transparent;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.12));`;
+                    case 'parallelogram': return `width:${s};height:${parseInt(s)*0.6}px;background:#69f0ae;transform:skewX(-20deg);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
+                    case 'cross': return `width:${s};height:${s};position:relative;background:transparent;box-shadow:none;`; // 简单占位，不显示复杂伪元素
                     default: return `width:${s};height:${s};border-radius:50%;background:#ccc;`;
                 }
             }
@@ -1286,7 +1331,7 @@
                 }
             });
 
-            // ============ 宝宝模式（不再强制横屏） ============
+            // ============ 宝宝模式 ============
             function requestFullscreen(element) {
                 const el = element || document.documentElement;
                 const requestMethod = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
@@ -1328,7 +1373,6 @@
                 }
             });
 
-            // 解锁按钮：长按2秒退出
             function startUnlockHold(e) {
                 e.preventDefault();
                 unlockBtn.classList.add('holding');
