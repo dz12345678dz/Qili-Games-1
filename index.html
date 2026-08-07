@@ -640,6 +640,9 @@
             <button class="mode-btn" data-mode="fruits">
                 <span class="mode-emoji">🍎</span> 水果
             </button>
+            <button class="mode-btn" data-mode="vegetables">
+                <span class="mode-emoji">🥦</span> 蔬菜
+            </button>
             <button class="mode-btn" data-mode="numbers">
                 <span class="mode-emoji">🔢</span> 数字
             </button>
@@ -648,6 +651,12 @@
             </button>
             <button class="mode-btn" data-mode="shapes">
                 <span class="mode-emoji">⭐</span> 形状
+            </button>
+            <button class="mode-btn" data-mode="furniture">
+                <span class="mode-emoji">🪑</span> 家具
+            </button>
+            <button class="mode-btn" data-mode="vehicles">
+                <span class="mode-emoji">🚗</span> 汽车
             </button>
         </div>
     </div>
@@ -670,7 +679,7 @@
             const lockBtn = document.getElementById('lockBtn');
 
             let totalStars = 0;
-            let currentMode = 'mixed'; // mixed, animals, fruits, numbers, colors, shapes
+            let currentMode = 'mixed'; // mixed, animals, fruits, vegetables, numbers, colors, shapes, furniture, vehicles
             let soundEnabled = true;
             let bubbles = [];
             let maxBubbles = 5;
@@ -702,7 +711,7 @@
                 }, 400);
             });
 
-            // ============ 数据定义 ============
+            // ============ 数据定义（扩充版） ============
             const dataAnimals = [
                 { emoji: '🐶', cn: '小狗', en: 'dog', sound: '汪汪汪' },
                 { emoji: '🐱', cn: '小猫', en: 'cat', sound: '喵喵喵' },
@@ -716,6 +725,10 @@
                 { emoji: '🐴', cn: '小马', en: 'horse', sound: '哒哒哒' },
                 { emoji: '🦊', cn: '狐狸', en: 'fox', sound: '聪明的狐狸' },
                 { emoji: '🐻', cn: '小熊', en: 'bear', sound: '胖胖的小熊' },
+                { emoji: '🐼', cn: '熊猫', en: 'panda', sound: '吃竹子的熊猫' },
+                { emoji: '🐨', cn: '考拉', en: 'koala', sound: '爱睡觉的考拉' },
+                { emoji: '🦁', cn: '狮子', en: 'lion', sound: '吼吼吼' },
+                { emoji: '🐯', cn: '老虎', en: 'tiger', sound: '凶猛的老虎' },
             ];
             const dataFruits = [
                 { emoji: '🍎', cn: '苹果', en: 'apple' },
@@ -728,6 +741,25 @@
                 { emoji: '🍑', cn: '桃子', en: 'peach' },
                 { emoji: '🍒', cn: '樱桃', en: 'cherry' },
                 { emoji: '🥭', cn: '芒果', en: 'mango' },
+                { emoji: '🍍', cn: '菠萝', en: 'pineapple' },
+                { emoji: '🍋', cn: '柠檬', en: 'lemon' },
+                { emoji: '🍐', cn: '梨', en: 'pear' },
+                { emoji: '🍈', cn: '甜瓜', en: 'melon' },
+                { emoji: '🫐', cn: '蓝莓', en: 'blueberry' },
+            ];
+            const dataVegetables = [
+                { emoji: '🥦', cn: '西兰花', en: 'broccoli' },
+                { emoji: '🥕', cn: '胡萝卜', en: 'carrot' },
+                { emoji: '🍅', cn: '西红柿', en: 'tomato' },
+                { emoji: '🥒', cn: '黄瓜', en: 'cucumber' },
+                { emoji: '🌽', cn: '玉米', en: 'corn' },
+                { emoji: '🧅', cn: '洋葱', en: 'onion' },
+                { emoji: '🥔', cn: '土豆', en: 'potato' },
+                { emoji: '🍆', cn: '茄子', en: 'eggplant' },
+                { emoji: '🫑', cn: '青椒', en: 'green pepper' },
+                { emoji: '🥬', cn: '生菜', en: 'lettuce' },
+                { emoji: '🧄', cn: '大蒜', en: 'garlic' },
+                { emoji: '🍄', cn: '蘑菇', en: 'mushroom' },
             ];
             const dataColors = [
                 { emoji: '🔴', cn: '红色', en: 'red', colorHex: '#ef5350' },
@@ -739,6 +771,9 @@
                 { emoji: '⚪', cn: '白色', en: 'white', colorHex: '#fafafa' },
                 { emoji: '🟤', cn: '棕色', en: 'brown', colorHex: '#8d6e63' },
                 { emoji: '💗', cn: '粉色', en: 'pink', colorHex: '#f48fb1' },
+                { emoji: '⚫', cn: '黑色', en: 'black', colorHex: '#424242' },
+                { emoji: '🩶', cn: '灰色', en: 'grey', colorHex: '#9e9e9e' },
+                { emoji: '🩵', cn: '青色', en: 'cyan', colorHex: '#00bcd4' },
             ];
             const dataShapes = [
                 { cn: '圆形', en: 'circle', shapeType: 'circle' },
@@ -747,6 +782,32 @@
                 { cn: '星形', en: 'star', shapeType: 'star' },
                 { cn: '心形', en: 'heart', shapeType: 'heart' },
                 { cn: '菱形', en: 'diamond', shapeType: 'diamond' },
+                { cn: '五边形', en: 'pentagon', shapeType: 'pentagon' },
+                { cn: '六边形', en: 'hexagon', shapeType: 'hexagon' },
+            ];
+            const dataFurniture = [
+                { emoji: '🪑', cn: '椅子', en: 'chair' },
+                { emoji: '🛏️', cn: '床', en: 'bed' },
+                { emoji: '📺', cn: '电视', en: 'television' },
+                { emoji: '🛋️', cn: '沙发', en: 'sofa' },
+                { emoji: '🗄️', cn: '柜子', en: 'cabinet' },
+                { emoji: '🪟', cn: '窗户', en: 'window' },
+                { emoji: '🚪', cn: '门', en: 'door' },
+                { emoji: '💡', cn: '灯', en: 'lamp' },
+                { emoji: '🖼️', cn: '画框', en: 'picture frame' },
+                { emoji: '📚', cn: '书架', en: 'bookshelf' },
+            ];
+            const dataVehicles = [
+                { emoji: '🚗', cn: '小汽车', en: 'car' },
+                { emoji: '🚌', cn: '公交车', en: 'bus' },
+                { emoji: '🚑', cn: '救护车', en: 'ambulance' },
+                { emoji: '🚒', cn: '消防车', en: 'fire truck' },
+                { emoji: '🚓', cn: '警车', en: 'police car' },
+                { emoji: '🏍️', cn: '摩托车', en: 'motorcycle' },
+                { emoji: '✈️', cn: '飞机', en: 'airplane' },
+                { emoji: '🚁', cn: '直升机', en: 'helicopter' },
+                { emoji: '🚂', cn: '火车', en: 'train' },
+                { emoji: '⛵', cn: '帆船', en: 'sailboat' },
             ];
             const dataNumbers = [];
             for (let i = 1; i <= 10; i++) {
@@ -764,15 +825,21 @@
                 switch (mode) {
                     case 'animals': return [...dataAnimals];
                     case 'fruits': return [...dataFruits];
+                    case 'vegetables': return [...dataVegetables];
                     case 'numbers': return [...dataNumbers];
                     case 'colors': return [...dataColors];
                     case 'shapes': return [...dataShapes];
+                    case 'furniture': return [...dataFurniture];
+                    case 'vehicles': return [...dataVehicles];
                     default: return [
                         ...dataAnimals.map(d => ({...d, category: 'animal'})),
                         ...dataFruits.map(d => ({...d, category: 'fruit'})),
+                        ...dataVegetables.map(d => ({...d, category: 'vegetable'})),
                         ...dataNumbers.map(d => ({...d, category: 'number'})),
                         ...dataColors.map(d => ({...d, category: 'color'})),
                         ...dataShapes.map(d => ({...d, category: 'shape'})),
+                        ...dataFurniture.map(d => ({...d, category: 'furniture'})),
+                        ...dataVehicles.map(d => ({...d, category: 'vehicle'})),
                     ];
                 }
             }
@@ -1074,6 +1141,8 @@
                     case 'star': return `width:${s};height:${s};background:#ffd740;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
                     case 'heart': return `width:${s};height:${s};background:#ff4081;clip-path:path('M50,30 C50,10 10,10 10,35 C10,60 50,85 50,85 C50,85 90,60 90,35 C90,10 50,10 50,30Z');box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
                     case 'diamond': return `width:${s};height:${s};background:#b388ff;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
+                    case 'pentagon': return `width:${s};height:${s};background:#ffab40;clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
+                    case 'hexagon': return `width:${s};height:${s};background:#80cbc4;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);box-shadow:0 4px 15px rgba(0,0,0,0.12);`;
                     default: return `width:${s};height:${s};border-radius:50%;background:#ccc;`;
                 }
             }
@@ -1186,9 +1255,12 @@
                     mixed: '混合模式！探索各种知识',
                     animals: '动物朋友！来认识小动物吧',
                     fruits: '水果乐园！看看有哪些水果',
+                    vegetables: '蔬菜园地！多吃蔬菜身体好',
                     numbers: '数字天地！一起来数数',
                     colors: '彩虹颜色！认识美丽的颜色',
                     shapes: '形状王国！发现有趣的形状',
+                    furniture: '家具世界！认识家里的物品',
+                    vehicles: '汽车总动员！看看有哪些车',
                 };
                 if (soundEnabled) speak(modeNames[mode] || '切换模式', 0.9);
             });
