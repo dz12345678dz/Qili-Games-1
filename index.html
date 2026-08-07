@@ -4,47 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>泡泡学园 - 宝宝的神奇花园</title>
     <style>
         :root { --safe-bottom: env(safe-area-inset-bottom, 16px); --safe-top: env(safe-area-inset-top, 12px); }
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
-        html,body { width:100vw; height:100vh; height:100dvh; overflow:hidden; font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif; background:linear-gradient(180deg, #c9e8f5 0%, #e8d5f5 25%, #fce4ec 55%, #d4ecc8 78%, #b8dba0 100%); touch-action:manipulation; position:relative; }
+        html, body {
+            width: 100vw; height: 100vh; height: 100dvh;
+            overflow: hidden;
+            font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(180deg, #c9e8f5 0%, #e8d5f5 25%, #fce4ec 55%, #d4ecc8 78%, #b8dba0 100%);
+            touch-action: manipulation;
+            position: relative;
+        }
         /* 模拟全屏 */
-        body.fake-fullscreen { position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(180deg, #c9e8f5, #e8d5f5, #fce4ec, #d4ecc8, #b8dba0); z-index:9999; }
-        body.fake-fullscreen .game-container { position:fixed; top:0; left:0; width:100%; height:100%; z-index:10000; background:inherit; }
-        /* 横屏提示层（仅在需要时显示） */
-        .rotate-hint { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(10px); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:auto; transition:opacity 0.3s; }
+        body.fake-fullscreen {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(180deg, #c9e8f5, #e8d5f5, #fce4ec, #d4ecc8, #b8dba0);
+            z-index: 9999;
+        }
+        body.fake-fullscreen .game-container {
+            position: fixed; top:0; left:0; width:100%; height:100%; z-index:10000;
+            background: inherit;
+        }
+        body.fake-fullscreen .top-bar { margin-top: var(--safe-top); }
+        body.fake-fullscreen .mode-bar { margin-bottom: var(--safe-bottom); }
+        body.fake-fullscreen .unlock-btn { display:flex; }
+
+        /* 旋转提示（默认隐藏） */
+        .rotate-hint {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+            z-index: 99999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            pointer-events: auto;
+            transition: opacity 0.3s;
+        }
         .rotate-hint.hidden { opacity:0; pointer-events:none; }
         .rotate-icon { font-size:90px; animation:rotatePhone 1.8s ease-in-out infinite; }
         @keyframes rotatePhone { 0%{transform:rotate(0deg)} 25%{transform:rotate(90deg)} 75%{transform:rotate(90deg)} 100%{transform:rotate(0deg)} }
         .rotate-text { color:white; font-size:32px; font-weight:bold; margin-top:20px; }
         .rotate-sub { color:rgba(255,255,255,0.8); font-size:18px; margin-top:10px; }
-        .unlock-btn { position:fixed; top:15px; right:15px; z-index:99999; width:50px; height:50px; border-radius:50%; background:rgba(0,0,0,0.3); backdrop-filter:blur(10px); border:2px solid rgba(255,255,255,0.5); color:white; font-size:22px; display:none; align-items:center; justify-content:center; }
-        .unlock-btn.visible { display:flex; }
+
+        /* 解锁按钮 */
+        .unlock-btn {
+            position: fixed; top: max(15px, var(--safe-top)); right: 15px;
+            z-index: 99999; width:50px; height:50px; border-radius:50%;
+            background: rgba(0,0,0,0.3); backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.5); color: white; font-size:22px;
+            display: none; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        .unlock-btn.visible { display: flex; }
+        .unlock-btn.holding { background: rgba(255,80,80,0.7); border-color: #ff5252; }
+
+        /* 装饰云朵 */
+        .sky-clouds, .decor-flower { pointer-events:none; position:fixed; }
         .cloud { position:absolute; background:white; border-radius:50%; opacity:0.6; animation:cloudFloat linear infinite; }
-        .cloud::before,.cloud::after { content:''; position:absolute; background:white; border-radius:50%; }
-        .cloud1 { width:90px; height:50px; top:8%; left:10%; animation-duration:35s; } .cloud1::before { width:55px; height:55px; top:-28px; left:15px; } .cloud1::after { width:40px; height:40px; top:-15px; left:45px; }
+        .cloud::before, .cloud::after { content:''; position:absolute; background:white; border-radius:50%; }
+        .cloud1 { width:90px; height:50px; top:8%; left:10%; animation-duration:35s; border-radius:50px; }
+        .cloud1::before { width:55px; height:55px; top:-28px; left:15px; } .cloud1::after { width:40px; height:40px; top:-15px; left:45px; }
+        .cloud2 { width:70px; height:38px; top:15%; left:55%; animation-duration:42s; border-radius:50px; }
+        .cloud2::before { width:42px; height:42px; top:-22px; left:10px; } .cloud2::after { width:32px; height:32px; top:-10px; left:35px; }
+        .cloud3 { width:80px; height:44px; top:22%; left:30%; animation-duration:38s; border-radius:50px; }
+        .cloud3::before { width:48px; height:48px; top:-26px; left:12px; } .cloud3::after { width:36px; height:36px; top:-12px; left:40px; }
         @keyframes cloudFloat { 0%{transform:translateX(0)} 25%{transform:translateX(30px)} 50%{transform:translateX(-10px)} 75%{transform:translateX(20px)} 100%{transform:translateX(0)} }
-        .decor-flower { position:fixed; font-size:28px; animation:flowerBob 4s ease-in-out infinite; }
-        @keyframes flowerBob { 0%,100%{transform:translateY(0)} 30%{transform:translateY(-8px)} }
+        .decor-flower { font-size:28px; animation:flowerBob 4s ease-in-out infinite; }
+        @keyframes flowerBob { 0%,100%{transform:translateY(0)} 30%{transform:translateY(-8px)} 60%{transform:translateY(-3px)} }
+
         .game-container { position:relative; z-index:10; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; pointer-events:none; }
-        .top-bar { pointer-events:auto; display:flex; align-items:center; gap:8px; padding:10px 16px; margin-top:var(--safe-top); background:rgba(255,255,255,0.85); border-radius:40px; backdrop-filter:blur(12px); z-index:100; }
-        .star-icon { font-size:28px; animation:starPulse 2s infinite; } @keyframes starPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
+        .top-bar { pointer-events:auto; display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 16px; margin-top:var(--safe-top); background:rgba(255,255,255,0.85); border-radius:40px; box-shadow:0 4px 20px rgba(0,0,0,0.08); backdrop-filter:blur(12px); z-index:100; flex-wrap:wrap; }
+        .star-display { display:flex; align-items:center; gap:4px; font-size:20px; font-weight:700; color:#f59e0b; }
+        .star-icon { font-size:28px; animation:starPulse 2s infinite; }
+        @keyframes starPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
         .star-count { font-size:26px; background:linear-gradient(135deg,#ffc107,#ff9800); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:900; }
-        .sound-btn,.lock-btn { padding:8px 14px; border:none; border-radius:25px; font-size:16px; font-weight:bold; background:rgba(255,255,255,0.9); cursor:pointer; }
+        .level-indicator { font-size:13px; color:#888; background:#f5f5f5; padding:4px 8px; border-radius:12px; }
+        .sound-btn,.lock-btn { pointer-events:auto; border:none; border-radius:25px; padding:8px 14px; font-size:16px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:4px; background:rgba(255,255,255,0.9); box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:all 0.2s; }
+        .sound-btn:active,.lock-btn:active { transform:scale(0.93); }
         .lock-btn.active-mode { background:#ff9800; color:white; }
-        .bubble-area { flex:1; width:100%; position:relative; z-index:20; min-height:55vh; }
-        .bubble { position:absolute; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.15s; animation:bubbleFloat var(--float-duration,4s) ease-in-out infinite; background:radial-gradient(circle at 35% 30%,#fff,#ffffff80 25%,var(--bubble-color) 55%,#b4c8f0); border:2px solid rgba(255,255,255,0.6); }
-        .bubble.popping { animation:popBubble 0.5s ease-out forwards !important; } @keyframes popBubble { 0%{transform:scale(1);opacity:1} 30%{transform:scale(1.5);opacity:0.7} 100%{transform:scale(2.2);opacity:0} }
-        @keyframes bubbleFloat { 0%,100%{transform:translateY(0)} 25%{transform:translateY(-18px)} }
-        .bubble.golden { background:radial-gradient(circle at 35% 30%,#ffffdc,#fff0b4 25%,#ffd264 55%,#ffb43c); }
-        .mode-bar { display:flex; gap:6px; padding:8px 12px; margin-bottom:var(--safe-bottom); background:rgba(255,255,255,0.85); border-radius:30px; backdrop-filter:blur(10px); z-index:100; }
-        .mode-btn { padding:8px 12px; border-radius:20px; border:2px solid transparent; background:#f5f5f5; font-size:13px; font-weight:600; color:#777; }
-        .mode-btn.active { background:#fff; border-color:#ff9800; color:#e65100; }
+
+        .bubble-area { pointer-events:auto; flex:1; width:100%; position:relative; z-index:20; min-height:55vh; }
+        .bubble { position:absolute; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.15s; animation:bubbleFloat var(--float-duration,4s) ease-in-out infinite; z-index:20; background:radial-gradient(circle at 35% 30%,#fff,#ffffff80 25%,var(--bubble-color) 55%,#b4c8f0); border:2px solid rgba(255,255,255,0.6); }
+        .bubble::after { content:''; position:absolute; width:28%; height:18%; background:rgba(255,255,255,0.8); border-radius:50%; top:16%; left:20%; transform:rotate(-20deg); pointer-events:none; }
+        .bubble:active { transform:scale(0.9); }
+        .bubble.popping { animation:popBubble 0.5s ease-out forwards !important; pointer-events:none; }
+        @keyframes popBubble { 0%{transform:scale(1);opacity:1} 30%{transform:scale(1.5);opacity:0.7} 100%{transform:scale(2.2);opacity:0} }
+        @keyframes bubbleFloat { 0%,100%{transform:translateY(0)} 25%{transform:translateY(-18px)} 50%{transform:translateY(-6px)} 75%{transform:translateY(-22px)} }
+        .bubble.golden { background:radial-gradient(circle at 35% 30%,#ffffdc,#fff0b4 25%,#ffd264 55%,#ffb43c); border:3px solid rgba(255,200,60,0.8); box-shadow:0 8px 36px rgba(255,170,30,0.35),0 0 40px rgba(255,180,40,0.4); animation:bubbleFloat 3.5s ease-in-out infinite,goldenGlow 1.5s infinite; }
+        @keyframes goldenGlow { 50%{box-shadow:0 8px 44px rgba(255,170,30,0.55),0 0 60px rgba(255,180,40,0.7)} }
+
+        .mode-bar { pointer-events:auto; display:flex; gap:6px; padding:8px 12px; margin-bottom:var(--safe-bottom); background:rgba(255,255,255,0.85); border-radius:30px; box-shadow:0 -2px 16px rgba(0,0,0,0.06); backdrop-filter:blur(10px); z-index:100; flex-wrap:wrap; justify-content:center; }
+        .mode-btn { padding:8px 12px; border-radius:20px; border:2px solid transparent; background:#f5f5f5; font-size:13px; cursor:pointer; font-weight:600; color:#777; }
+        .mode-btn.active { background:#fff; border-color:#ff9800; color:#e65100; box-shadow:0 3px 12px rgba(255,152,0,0.2); }
+        .celebrate-overlay { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:300; display:flex; align-items:center; justify-content:center; }
     </style>
 </head>
 <body>
-    <!-- 横屏提示层（默认隐藏） -->
+    <!-- 旋转提示层（默认隐藏） -->
     <div class="rotate-hint hidden" id="rotateHint">
         <div class="rotate-icon">📱</div>
         <div class="rotate-text">请旋转手机</div>
@@ -52,10 +108,19 @@
     </div>
     <div class="unlock-btn" id="unlockBtn">🔓</div>
 
+    <div class="sky-clouds">
+        <div class="cloud cloud1"></div><div class="cloud cloud2"></div><div class="cloud cloud3"></div>
+    </div>
+    <div class="decor-flower" style="bottom:14%;left:8%;">🌼</div>
+    <div class="decor-flower" style="bottom:12%;left:22%;font-size:22px;">🌸</div>
+    <div class="decor-flower" style="bottom:15%;right:12%;">🌻</div>
+    <div class="decor-flower" style="bottom:11%;right:25%;font-size:24px;">🌷</div>
+
     <div class="game-container" id="gameContainer">
         <div class="top-bar" id="topBar">
-            <span class="star-icon">⭐</span> <span class="star-count" id="starCount">0</span>
-            <span id="levelIndicator">🌱 开始探索</span>
+            <span class="star-icon">⭐</span>
+            <div class="star-display"><span class="star-count" id="starCount">0</span></div>
+            <span class="level-indicator" id="levelIndicator">🌱 开始探索</span>
             <button class="sound-btn" id="soundBtn">🔊</button>
             <button class="lock-btn" id="lockBtn">🔒 宝宝模式</button>
         </div>
@@ -69,7 +134,7 @@
             <button class="mode-btn" data-mode="shapes">⭐ 形状</button>
         </div>
     </div>
-    <div id="celebrateOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:300;display:flex;align-items:center;justify-content:center;"></div>
+    <div class="celebrate-overlay" id="celebrateOverlay"></div>
 
     <script>
         (function() {
@@ -86,8 +151,8 @@
 
             let totalStars = 0, currentMode = 'mixed', soundEnabled = true;
             let bubbles = [], maxBubbles = 5, isProcessing = false;
-            let audioCtx = null;
-            let isLockedMode = false;
+            let audioCtx = null, speechQueue = [], isSpeaking = false;
+            let isLockedMode = false, unlockTimer = null;
 
             function adjustForScreen() {
                 const w = window.innerWidth;
@@ -95,17 +160,29 @@
             }
             adjustForScreen();
             window.addEventListener('resize',()=>{ adjustForScreen(); repositionAllBubbles(); });
+            window.addEventListener('orientationchange',()=>{ setTimeout(()=>{ adjustForScreen(); repositionAllBubbles(); },400); });
 
-            // 数据定义（数字使用中文保证发音）
+            // 数据定义
             const chineseNumbers = ['零','一','二','三','四','五','六','七','八','九','十'];
             const englishNumbers = ['','one','two','three','four','five','six','seven','eight','nine','ten'];
             const dataAnimals = [
                 {emoji:'🐶',cn:'小狗',en:'dog',sound:'汪汪汪'},{emoji:'🐱',cn:'小猫',en:'cat',sound:'喵喵喵'},
-                {emoji:'🐰',cn:'兔子',en:'rabbit',sound:'蹦蹦跳'},{emoji:'🐮',cn:'奶牛',en:'cow',sound:'哞哞哞'}
+                {emoji:'🐰',cn:'兔子',en:'rabbit',sound:'蹦蹦跳'},{emoji:'🐮',cn:'奶牛',en:'cow',sound:'哞哞哞'},
+                {emoji:'🐔',cn:'小鸡',en:'chicken',sound:'叽叽叽'},{emoji:'🐷',cn:'小猪',en:'pig',sound:'哼哼哼'},
+                {emoji:'🐘',cn:'大象',en:'elephant',sound:'长鼻子大象'},{emoji:'🦆',cn:'鸭子',en:'duck',sound:'嘎嘎嘎'}
             ];
-            const dataFruits = [{emoji:'🍎',cn:'苹果',en:'apple'},{emoji:'🍌',cn:'香蕉',en:'banana'}];
-            const dataColors = [{emoji:'🔴',cn:'红色',en:'red',colorHex:'#ef5350'},{emoji:'🔵',cn:'蓝色',en:'blue',colorHex:'#42a5f5'}];
-            const dataShapes = [{cn:'圆形',en:'circle',shapeType:'circle'},{cn:'方形',en:'square',shapeType:'square'}];
+            const dataFruits = [
+                {emoji:'🍎',cn:'苹果',en:'apple'},{emoji:'🍌',cn:'香蕉',en:'banana'},
+                {emoji:'🍊',cn:'橙子',en:'orange'},{emoji:'🍓',cn:'草莓',en:'strawberry'}
+            ];
+            const dataColors = [
+                {emoji:'🔴',cn:'红色',en:'red',colorHex:'#ef5350'},{emoji:'🔵',cn:'蓝色',en:'blue',colorHex:'#42a5f5'},
+                {emoji:'🟢',cn:'绿色',en:'green',colorHex:'#66bb6a'},{emoji:'🟡',cn:'黄色',en:'yellow',colorHex:'#fdd835'}
+            ];
+            const dataShapes = [
+                {cn:'圆形',en:'circle',shapeType:'circle'},{cn:'方形',en:'square',shapeType:'square'},
+                {cn:'三角形',en:'triangle',shapeType:'triangle'},{cn:'星形',en:'star',shapeType:'star'}
+            ];
             const dataNumbers = [];
             for(let i=1;i<=10;i++) dataNumbers.push({number:i, cn:chineseNumbers[i], en:englishNumbers[i]});
 
@@ -116,33 +193,25 @@
                     case 'numbers': return dataNumbers;
                     case 'colors': return dataColors;
                     case 'shapes': return dataShapes;
-                    default: return [...dataAnimals, ...dataFruits, ...dataNumbers, ...dataColors, ...dataShapes];
+                    default: return [...dataAnimals.map(d=>({...d,category:'animal'})),...dataFruits.map(d=>({...d,category:'fruit'})),...dataNumbers.map(d=>({...d,category:'number'})),...dataColors.map(d=>({...d,category:'color'})),...dataShapes.map(d=>({...d,category:'shape'}))];
                 }
             }
 
-            // 音频上下文
+            // 音频
             function getAudioContext() {
                 if(!audioCtx) try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
                 if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume();
                 return audioCtx;
             }
-            function playTone(freq,dur,type='sine',vol=0.08){
-                if(!soundEnabled) return;
-                const ctx=getAudioContext(); if(!ctx) return;
-                const o=ctx.createOscillator(),g=ctx.createGain();
-                o.type=type; o.frequency.value=freq;
-                g.gain.setValueAtTime(vol,ctx.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
-                o.connect(g); g.connect(ctx.destination);
-                o.start(); o.stop(ctx.currentTime+dur);
-            }
+            function playTone(freq,dur,type='sine',vol=0.08){ if(!soundEnabled)return; const ctx=getAudioContext(); if(!ctx)return; const o=ctx.createOscillator(),g=ctx.createGain(); o.type=type; o.frequency.value=freq; g.gain.setValueAtTime(vol,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+dur); }
             function playPopSound(){ playTone(600,0.15); setTimeout(()=>playTone(900,0.1),60); }
+            function playStarSound(){ playTone(800,0.12); }
 
-            // ========== 语音播报（简化版，每次点击立即播报） ==========
+            // ========== 语音播报（修复版：立即取消并播放） ==========
             function speak(text, rate=0.85){
                 if(!soundEnabled) return;
                 if(!('speechSynthesis' in window)) return;
-                // 取消当前正在播放的语音，并清空待播队列（立即播放新语音）
+                // 取消当前正在播放的语音，确保新语音立即播放
                 window.speechSynthesis.cancel();
                 const u = new SpeechSynthesisUtterance(text);
                 u.lang = 'zh-CN';
@@ -161,7 +230,7 @@
                 speak(t, 0.8);
             }
 
-            // 视觉特效
+            // 粒子与特效
             function spawnParticles(x,y,count=12){
                 const colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff'];
                 for(let i=0;i<count;i++){
@@ -169,13 +238,34 @@
                     p.style.cssText=`position:fixed;pointer-events:none;z-index:200;left:${x}px;top:${y}px;width:8px;height:8px;background:${colors[i%4]};border-radius:50%;animation:fly 0.6s ease-out forwards;--dx:${(Math.random()-0.5)*100}px;--dy:${(Math.random()-0.5)*100}px;`;
                     document.body.appendChild(p); setTimeout(()=>p.remove(),700);
                 }
+                if(!document.getElementById('particle-keyframes')){
+                    const style=document.createElement('style'); style.id='particle-keyframes';
+                    style.textContent='@keyframes fly{to{transform:translate(var(--dx),var(--dy));opacity:0;}}';
+                    document.head.appendChild(style);
+                }
+            }
+            function spawnFlyingStar(x,y,target){
+                const r=target.getBoundingClientRect();
+                const star=document.createElement('div');
+                star.style.cssText=`position:fixed;pointer-events:none;z-index:250;font-size:28px;left:${x}px;top:${y}px;animation:flyStar 0.7s ease-out forwards;--tx:${r.left+r.width/2-x}px;--ty:${r.top+r.height/2-y}px;`;
+                star.textContent='⭐'; document.body.appendChild(star); playStarSound(); setTimeout(()=>star.remove(),750);
+                if(!document.getElementById('star-keyframes')){
+                    const style=document.createElement('style'); style.id='star-keyframes';
+                    style.textContent='@keyframes flyStar{to{transform:translate(var(--tx),var(--ty)) scale(0.5);opacity:0.7;}}';
+                    document.head.appendChild(style);
+                }
             }
             function celebrateMilestone(){
-                const texts=['🎉 太棒了！','🌟 真聪明！','👏 好厉害！'];
+                const texts=['🎉 太棒了！','🌟 真聪明！','👏 好厉害！','💖 宝宝真棒！'];
                 const el=document.createElement('div');
                 el.style.cssText='font-size:60px;font-weight:900;animation:bounce 0.6s ease-out;';
                 el.textContent=texts[Math.floor(Math.random()*texts.length)];
                 celebrateOverlay.appendChild(el);
+                for(let i=0;i<20;i++){
+                    const c=document.createElement('div'); c.textContent='🌟';
+                    c.style.cssText=`position:fixed;z-index:290;font-size:24px;left:${Math.random()*90}%;top:-30px;animation:fall 2.5s ease-in forwards;animation-delay:${Math.random()*0.5}s;`;
+                    celebrateOverlay.appendChild(c);
+                }
                 setTimeout(()=>celebrateOverlay.innerHTML='',2500);
             }
 
@@ -187,7 +277,7 @@
                 const size=getBubbleSize();
                 const el=document.createElement('div');
                 el.className='bubble'+(golden?' golden':'');
-                el.style.cssText=`width:${size}px;height:${size}px;--float-duration:${Math.random()*2+3}s;--bubble-color:rgba(255,220,240,0.4);`;
+                el.style.cssText=`width:${size}px;height:${size}px;--float-duration:${Math.random()*2+3}s;--float-delay:${Math.random()*3}s;--bubble-color:rgba(255,220,240,0.4);`;
                 if(data.shapeType){
                     const d=document.createElement('div');
                     d.style.cssText=`width:${size*0.4}px;height:${size*0.4}px;background:#ff8a80;border-radius:${data.shapeType==='circle'?'50%':'6px'};`;
@@ -217,9 +307,10 @@
                 playPopSound();
                 if(golden) playTone(1000,0.2);
                 spawnParticles(cx,cy,golden?20:12);
+                spawnFlyingStar(cx,cy,topBar);
                 totalStars+=golden?3:1;
                 updateStarDisplay();
-                speakItemData(data);   // 立即播报语音
+                speakItemData(data);   // 语音播报
                 if(totalStars%10===0) setTimeout(celebrateMilestone,400);
                 setTimeout(()=>{
                     if(el.parentNode) el.remove();
@@ -263,6 +354,7 @@
             function clearAllBubbles(){
                 bubbles.forEach(b=>b.el.remove());
                 bubbles=[];
+                window.speechSynthesis?.cancel();
             }
             function initBubbles(){ clearAllBubbles(); for(let i=0;i<maxBubbles;i++) spawnOneBubble(); }
 
@@ -284,58 +376,69 @@
                 if(!soundEnabled) window.speechSynthesis?.cancel();
             });
 
-            // ========== 横屏/宝宝模式（只有点击“宝宝模式”时才提示横屏） ==========
+            // ========== 宝宝模式（仅点击后提示横屏） ==========
             function isLandscape(){ return window.innerWidth > window.innerHeight; }
             function showRotateHint(){ rotateHint.classList.remove('hidden'); }
             function hideRotateHint(){ rotateHint.classList.add('hidden'); }
-            // 页面加载时不显示任何横屏提示
+            // 初始隐藏旋转提示
             hideRotateHint();
 
             function requestFullscreen(){
-                const el=document.documentElement;
-                const request=el.requestFullscreen||el.webkitRequestFullscreen;
-                if(request) request.call(el).catch(()=>enableFakeFullscreen());
-                else enableFakeFullscreen();
+                const el = document.documentElement;
+                const request = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+                if(request){
+                    request.call(el).then(() => {
+                        document.body.classList.remove('fake-fullscreen');
+                    }).catch(() => {
+                        enableFakeFullscreen();
+                    });
+                } else {
+                    enableFakeFullscreen();
+                }
             }
             function enableFakeFullscreen(){
                 document.body.classList.add('fake-fullscreen');
                 window.scrollTo(0,1);
                 unlockBtn.classList.add('visible');
+                if(soundEnabled) speak('已进入宝宝模式，长按右上角解锁退出',0.9);
             }
             function exitFullscreen(){
-                const exit=document.exitFullscreen||document.webkitExitFullscreen;
+                const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
                 if(exit) exit.call(document).catch(()=>{});
                 document.body.classList.remove('fake-fullscreen');
                 unlockBtn.classList.remove('visible');
             }
+            function lockOrientation(){ if(screen.orientation&&screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{}); }
+            function unlockOrientation(){ if(screen.orientation&&screen.orientation.unlock) screen.orientation.unlock(); }
 
             function enterLockMode(){
-                // 检查是否横屏，若不是则显示旋转提示并阻止进入
+                // 若当前为竖屏，显示旋转提示，并语音提醒
                 if(!isLandscape()){
                     showRotateHint();
                     speak('请先旋转手机至横屏',0.9);
                     return;
                 }
-                // 横屏状态下进入宝宝模式
+                // 横屏则进入宝宝模式
                 hideRotateHint();
-                isLockedMode=true;
-                lockBtn.textContent='🔓 退出宝宝模式';
+                isLockedMode = true;
+                lockBtn.textContent = '🔓 退出宝宝模式';
                 lockBtn.classList.add('active-mode');
                 requestFullscreen();
-                if(screen.orientation&&screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{});
+                lockOrientation();
             }
             function exitLockMode(){
                 if(!isLockedMode) return;
-                isLockedMode=false;
-                lockBtn.textContent='🔒 宝宝模式';
+                isLockedMode = false;
+                lockBtn.textContent = '🔒 宝宝模式';
                 lockBtn.classList.remove('active-mode');
-                if(screen.orientation&&screen.orientation.unlock) screen.orientation.unlock();
+                unlockOrientation();
                 exitFullscreen();
                 hideRotateHint();
+                speak('已退出宝宝模式',0.9);
             }
 
             lockBtn.addEventListener('click', ()=>{
-                if(isLockedMode) {
+                if(isLockedMode){
                     speak('请长按右上角解锁退出',0.9);
                 } else {
                     enterLockMode();
@@ -343,17 +446,25 @@
             });
 
             // 解锁按钮长按2秒退出
-            let unlockTimer;
-            unlockBtn.addEventListener('pointerdown',(e)=>{
+            unlockBtn.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
                 unlockBtn.classList.add('holding');
                 unlockTimer = setTimeout(exitLockMode, 2000);
             });
-            unlockBtn.addEventListener('pointerup',()=>{
+            unlockBtn.addEventListener('pointerup', () => {
                 clearTimeout(unlockTimer);
                 unlockBtn.classList.remove('holding');
             });
-            unlockBtn.addEventListener('pointerleave',()=>{
+            unlockBtn.addEventListener('pointerleave', () => {
+                clearTimeout(unlockTimer);
+                unlockBtn.classList.remove('holding');
+            });
+            unlockBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                unlockBtn.classList.add('holding');
+                unlockTimer = setTimeout(exitLockMode, 2000);
+            });
+            unlockBtn.addEventListener('touchend', () => {
                 clearTimeout(unlockTimer);
                 unlockBtn.classList.remove('holding');
             });
