@@ -8,32 +8,41 @@
     <style>
         :root { --safe-bottom: env(safe-area-inset-bottom, 16px); --safe-top: env(safe-area-inset-top, 12px); }
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
-        html,body { width:100vw; height:100vh; height:100dvh; overflow:hidden; font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif; background:linear-gradient(180deg, #c9e8f5 0%, #e8d5f5 25%, #fce4ec 55%, #d4ecc8 78%, #b8dba0 100%); touch-action:manipulation; position:relative; }
-        body.fake-fullscreen { position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(180deg, #c9e8f5, #e8d5f5, #fce4ec, #d4ecc8, #b8dba0); z-index:9999; }
+        html, body { width:100vw; height:100vh; height:100dvh; overflow:hidden; font-family:sans-serif; background:linear-gradient(180deg, #c9e8f5, #e8d5f5, #fce4ec, #d4ecc8, #b8dba0); touch-action:manipulation; position:relative; }
+        /* 全屏模拟 */
+        body.fake-fullscreen { position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; background:linear-gradient(180deg, #c9e8f5, #e8d5f5, #fce4ec, #d4ecc8, #b8dba0); }
         body.fake-fullscreen .game-container { position:fixed; top:0; left:0; width:100%; height:100%; z-index:10000; background:inherit; }
-        .rotate-hint { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(10px); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:auto; transition:opacity 0.3s; }
-        .rotate-hint.hidden { opacity:0; pointer-events:none; }
-        .rotate-icon { font-size:90px; animation:rotatePhone 1.8s ease-in-out infinite; }
+        /* 旋转提示：默认不显示，不阻挡点击 */
+        .rotate-hint {
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.7); backdrop-filter:blur(10px);
+            z-index:99999; display:none; flex-direction:column; align-items:center; justify-content:center;
+            pointer-events:auto;
+        }
+        .rotate-hint.show { display:flex; }
+        .rotate-icon { font-size:90px; animation:rotatePhone 1.8s infinite; }
         @keyframes rotatePhone { 0%{transform:rotate(0deg)} 25%{transform:rotate(90deg)} 75%{transform:rotate(90deg)} 100%{transform:rotate(0deg)} }
         .rotate-text { color:white; font-size:32px; font-weight:bold; margin-top:20px; }
-        .unlock-btn { position:fixed; top:15px; right:15px; z-index:99999; width:50px; height:50px; border-radius:50%; background:rgba(0,0,0,0.3); backdrop-filter:blur(10px); border:2px solid rgba(255,255,255,0.5); color:white; font-size:22px; display:none; align-items:center; justify-content:center; }
-        .unlock-btn.visible { display:flex; }
-        .cloud { position:absolute; background:white; border-radius:50%; opacity:0.6; animation:cloudFloat linear infinite; }
-        .cloud::before,.cloud::after { content:''; position:absolute; background:white; border-radius:50%; }
-        .cloud1 { width:90px; height:50px; top:8%; left:10%; animation-duration:35s; }
-        .cloud1::before { width:55px; height:55px; top:-28px; left:15px; } .cloud1::after { width:40px; height:40px; top:-15px; left:45px; }
-        @keyframes cloudFloat { 0%{transform:translateX(0)} 25%{transform:translateX(30px)} 50%{transform:translateX(-10px)} 75%{transform:translateX(20px)} 100%{transform:translateX(0)} }
-        .decor-flower { position:fixed; font-size:28px; animation:flowerBob 4s ease-in-out infinite; }
-        @keyframes flowerBob { 0%,100%{transform:translateY(0)} 30%{transform:translateY(-8px)} }
-        .game-container { position:relative; z-index:10; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; pointer-events:none; }
-        .top-bar { pointer-events:auto; display:flex; align-items:center; gap:8px; padding:10px 16px; margin-top:var(--safe-top); background:rgba(255,255,255,0.85); border-radius:40px; backdrop-filter:blur(12px); z-index:100; }
-        .star-icon { font-size:28px; animation:starPulse 2s infinite; } @keyframes starPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
-        .star-count { font-size:26px; background:linear-gradient(135deg,#ffc107,#ff9800); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:900; }
+        /* 解锁按钮 */
+        .unlock-btn {
+            position:fixed; top:15px; right:15px; z-index:99999;
+            width:50px; height:50px; border-radius:50%;
+            background:rgba(0,0,0,0.3); backdrop-filter:blur(10px);
+            border:2px solid rgba(255,255,255,0.5); color:white; font-size:22px;
+            display:none; align-items:center; justify-content:center; cursor:pointer;
+        }
+        .unlock-btn.show { display:flex; }
+        .unlock-btn.hold { background:rgba(255,80,80,0.7); }
+        /* 游戏容器 */
+        .game-container { position:relative; z-index:10; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; }
+        .top-bar { display:flex; align-items:center; gap:8px; padding:10px 16px; margin-top:var(--safe-top); background:rgba(255,255,255,0.85); border-radius:40px; backdrop-filter:blur(12px); z-index:100; }
+        .star-count { font-size:26px; font-weight:900; color:#f59e0b; }
         .sound-btn,.lock-btn { padding:8px 14px; border:none; border-radius:25px; font-size:16px; font-weight:bold; background:rgba(255,255,255,0.9); cursor:pointer; }
-        .lock-btn.active-mode { background:#ff9800; color:white; }
+        .lock-btn.active { background:#ff9800; color:white; }
         .bubble-area { flex:1; width:100%; position:relative; z-index:20; min-height:55vh; }
-        .bubble { position:absolute; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.15s; animation:bubbleFloat var(--float-duration,4s) ease-in-out infinite; background:radial-gradient(circle at 35% 30%,#fff,#ffffff80 25%,var(--bubble-color) 55%,#b4c8f0); border:2px solid rgba(255,255,255,0.6); }
-        .bubble.popping { animation:popBubble 0.5s ease-out forwards !important; } @keyframes popBubble { 0%{transform:scale(1);opacity:1} 30%{transform:scale(1.5);opacity:0.7} 100%{transform:scale(2.2);opacity:0} }
+        .bubble { position:absolute; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; animation:bubbleFloat var(--float-duration,4s) infinite; background:radial-gradient(circle at 35% 30%,#fff,#ffffff80 25%,var(--bubble-color, #d0e0ff) 55%,#b4c8f0); border:2px solid rgba(255,255,255,0.6); }
+        .bubble.popping { animation:popBubble 0.5s forwards !important; pointer-events:none; }
+        @keyframes popBubble { 0%{transform:scale(1);opacity:1} 30%{transform:scale(1.5);opacity:0.7} 100%{transform:scale(2.2);opacity:0} }
         @keyframes bubbleFloat { 0%,100%{transform:translateY(0)} 25%{transform:translateY(-18px)} }
         .bubble.golden { background:radial-gradient(circle at 35% 30%,#ffffdc,#fff0b4 25%,#ffd264 55%,#ffb43c); }
         .mode-bar { display:flex; gap:6px; padding:8px 12px; margin-bottom:var(--safe-bottom); background:rgba(255,255,255,0.85); border-radius:30px; backdrop-filter:blur(10px); z-index:100; }
@@ -42,16 +51,16 @@
     </style>
 </head>
 <body>
-    <div class="rotate-hint hidden" id="rotateHint">
+    <div class="rotate-hint" id="rotateHint">
         <div class="rotate-icon">📱</div>
         <div class="rotate-text">请旋转手机</div>
-        <div class="rotate-sub">横屏模式更适合宝宝玩耍哦～</div>
+        <div>横屏模式更适合宝宝玩耍哦～</div>
     </div>
     <div class="unlock-btn" id="unlockBtn">🔓</div>
 
     <div class="game-container" id="gameContainer">
         <div class="top-bar" id="topBar">
-            <span class="star-icon">⭐</span> <span class="star-count" id="starCount">0</span>
+            <span>⭐</span> <span class="star-count" id="starCount">0</span>
             <span id="levelIndicator">🌱 开始探索</span>
             <button class="sound-btn" id="soundBtn">🔊</button>
             <button class="lock-btn" id="lockBtn">🔒 宝宝模式</button>
@@ -66,265 +75,302 @@
             <button class="mode-btn" data-mode="shapes">⭐ 形状</button>
         </div>
     </div>
-    <div id="celebrateOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:300;display:flex;align-items:center;justify-content:center;"></div>
 
     <script>
         (function() {
+            // 元素
             const bubbleArea = document.getElementById('bubbleArea');
             const starCountEl = document.getElementById('starCount');
             const levelIndicator = document.getElementById('levelIndicator');
-            const celebrateOverlay = document.getElementById('celebrateOverlay');
             const soundBtn = document.getElementById('soundBtn');
             const modeBar = document.getElementById('modeBar');
-            const topBar = document.getElementById('topBar');
             const rotateHint = document.getElementById('rotateHint');
             const unlockBtn = document.getElementById('unlockBtn');
             const lockBtn = document.getElementById('lockBtn');
 
+            // 状态
             let totalStars = 0, currentMode = 'mixed', soundEnabled = true;
-            let bubbles = [], maxBubbles = 5, isProcessing = false;
+            let bubbles = [], maxBubbles = 5, processing = false;
             let audioCtx = null;
-            let isLockedMode = false;
+            let isLocked = false, orientationWatcher = null;
 
-            function adjustForScreen() {
+            function setMaxBubbles() {
                 const w = window.innerWidth;
-                if(w<400) maxBubbles=4; else if(w<600) maxBubbles=5; else if(w<900) maxBubbles=6; else maxBubbles=7;
+                maxBubbles = (w < 400) ? 4 : (w < 600) ? 5 : (w < 900) ? 6 : 7;
             }
-            adjustForScreen();
-            window.addEventListener('resize',()=>{ adjustForScreen(); repositionAllBubbles(); });
+            setMaxBubbles();
+            window.addEventListener('resize', () => { setMaxBubbles(); reposition(); });
 
-            const chineseNumbers = ['零','一','二','三','四','五','六','七','八','九','十'];
-            const englishNumbers = ['','one','two','three','four','five','six','seven','eight','nine','ten'];
-            const dataAnimals = [
-                {emoji:'🐶',cn:'小狗',en:'dog',sound:'汪汪汪'},{emoji:'🐱',cn:'小猫',en:'cat',sound:'喵喵喵'},
-                {emoji:'🐰',cn:'兔子',en:'rabbit',sound:'蹦蹦跳'},{emoji:'🐮',cn:'奶牛',en:'cow',sound:'哞哞哞'}
+            // 数据
+            const chnNums = ['零','一','二','三','四','五','六','七','八','九','十'];
+            const engNums = ['','one','two','three','four','five','six','seven','eight','nine','ten'];
+            const animals = [
+                {e:'🐶',c:'小狗',en:'dog',s:'汪汪汪'},{e:'🐱',c:'小猫',en:'cat',s:'喵喵喵'},
+                {e:'🐰',c:'兔子',en:'rabbit',s:'蹦蹦跳'},{e:'🐮',c:'奶牛',en:'cow',s:'哞哞哞'}
             ];
-            const dataFruits = [{emoji:'🍎',cn:'苹果',en:'apple'},{emoji:'🍌',cn:'香蕉',en:'banana'}];
-            const dataColors = [{emoji:'🔴',cn:'红色',en:'red',colorHex:'#ef5350'},{emoji:'🔵',cn:'蓝色',en:'blue',colorHex:'#42a5f5'}];
-            const dataShapes = [{cn:'圆形',en:'circle',shapeType:'circle'},{cn:'方形',en:'square',shapeType:'square'}];
-            const dataNumbers = [];
-            for(let i=1;i<=10;i++) dataNumbers.push({number:i, cn:chineseNumbers[i], en:englishNumbers[i]});
+            const fruits = [{e:'🍎',c:'苹果',en:'apple'},{e:'🍌',c:'香蕉',en:'banana'}];
+            const colors = [{e:'🔴',c:'红色',en:'red',hex:'#ef5350'},{e:'🔵',c:'蓝色',en:'blue',hex:'#42a5f5'}];
+            const shapes = [{c:'圆形',en:'circle',t:'circle'},{c:'方形',en:'square',t:'square'}];
+            const numbers = [];
+            for(let i=1;i<=10;i++) numbers.push({n:i, c:chnNums[i], en:engNums[i]});
 
-            function getDataForMode(mode) {
-                switch(mode){
-                    case 'animals': return dataAnimals;
-                    case 'fruits': return dataFruits;
-                    case 'numbers': return dataNumbers;
-                    case 'colors': return dataColors;
-                    case 'shapes': return dataShapes;
-                    default: return [...dataAnimals, ...dataFruits, ...dataNumbers, ...dataColors, ...dataShapes];
+            function getPool(mode) {
+                switch(mode) {
+                    case 'animals': return animals;
+                    case 'fruits': return fruits;
+                    case 'numbers': return numbers;
+                    case 'colors': return colors;
+                    case 'shapes': return shapes;
+                    default: return [...animals, ...fruits, ...numbers, ...colors, ...shapes];
                 }
             }
 
-            function getAudioContext() {
-                if(!audioCtx) try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
-                if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume();
-                return audioCtx;
+            // 音频
+            function initAudio() {
+                if(!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+                if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             }
-            function playTone(freq,dur,type='sine',vol=0.08){ if(!soundEnabled)return; const ctx=getAudioContext(); if(!ctx)return; const o=ctx.createOscillator(),g=ctx.createGain(); o.type=type; o.frequency.value=freq; g.gain.setValueAtTime(vol,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+dur); }
-            function playPopSound(){ playTone(600,0.15); setTimeout(()=>playTone(900,0.1),60); }
-
-            // 语音播报（修复版）
-            function speak(text, rate=0.85){
+            function tone(f,dur) {
                 if(!soundEnabled) return;
-                if(!('speechSynthesis' in window)) return;
+                const ctx = audioCtx; if(!ctx) return;
+                const o = ctx.createOscillator(), g = ctx.createGain();
+                o.type = 'sine'; o.frequency.value = f;
+                g.gain.setValueAtTime(0.08, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+dur);
+                o.connect(g); g.connect(ctx.destination);
+                o.start(); o.stop(ctx.currentTime+dur);
+            }
+            function popSound() { tone(600,0.15); setTimeout(()=>tone(900,0.1),60); }
+
+            // 语音（极简稳定）
+            function speak(text, rate=0.85) {
+                if(!soundEnabled || !('speechSynthesis' in window)) return;
                 window.speechSynthesis.cancel();
                 const u = new SpeechSynthesisUtterance(text);
                 u.lang = 'zh-CN'; u.rate = rate; u.pitch = 1.15;
                 window.speechSynthesis.speak(u);
             }
-            function speakItemData(d){
+            function speakItem(d) {
                 if(!soundEnabled) return;
-                let t='';
-                if(d.number!==undefined) t = `${d.cn}！${d.en}`;
-                else if(d.colorHex) t = `${d.cn}！${d.en}`;
-                else if(d.shapeType) t = `${d.cn}！${d.en}`;
-                else if(d.sound) t = `${d.cn}！${d.sound}！${d.en}`;
-                else t = `${d.cn}！${d.en}`;
+                let t = '';
+                if(d.n !== undefined) t = `${d.c}！${d.en}`;
+                else if(d.hex) t = `${d.c}！${d.en}`;
+                else if(d.t) t = `${d.c}！${d.en}`;
+                else if(d.s) t = `${d.c}！${d.s}！${d.en}`;
+                else t = `${d.c}！${d.en}`;
                 speak(t, 0.8);
             }
 
-            function spawnParticles(x,y,count=12){
-                const colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff'];
-                for(let i=0;i<count;i++){
-                    const p=document.createElement('div');
-                    p.style.cssText=`position:fixed;pointer-events:none;z-index:200;left:${x}px;top:${y}px;width:8px;height:8px;background:${colors[i%4]};border-radius:50%;animation:fly 0.6s ease-out forwards;--dx:${(Math.random()-0.5)*100}px;--dy:${(Math.random()-0.5)*100}px;`;
-                    document.body.appendChild(p); setTimeout(()=>p.remove(),700);
-                }
-            }
-            function celebrateMilestone(){
-                const texts=['🎉 太棒了！','🌟 真聪明！','👏 好厉害！'];
-                const el=document.createElement('div');
-                el.style.cssText='font-size:60px;font-weight:900;animation:bounce 0.6s ease-out;';
-                el.textContent=texts[Math.floor(Math.random()*texts.length)];
-                celebrateOverlay.appendChild(el);
-                setTimeout(()=>celebrateOverlay.innerHTML='',2500);
-            }
-
-            function getBubbleSize(){ const w=window.innerWidth; return w<400?75:w<600?85:100; }
-            function getRandomPosition(size){ const r=bubbleArea.getBoundingClientRect(); return {x:Math.random()*(r.width-size-20)+10, y:Math.random()*(r.height-size-20)+10}; }
-            function isTooClose(x,y,list,min){ return list.some(b=>Math.hypot(x-parseFloat(b.el.style.left),y-parseFloat(b.el.style.top))<min); }
-            function createBubbleElement(data, golden=false){
-                const size=getBubbleSize();
-                const el=document.createElement('div');
-                el.className='bubble'+(golden?' golden':'');
-                el.style.cssText=`width:${size}px;height:${size}px;--float-duration:${Math.random()*2+3}s;--bubble-color:rgba(255,220,240,0.4);`;
-                if(data.shapeType){
-                    const d=document.createElement('div');
-                    d.style.cssText=`width:${size*0.4}px;height:${size*0.4}px;background:#ff8a80;border-radius:${data.shapeType==='circle'?'50%':'6px'};`;
+            // 泡泡逻辑
+            function bubbleSize() { const w = window.innerWidth; return w<400?75:w<600?85:100; }
+            function randPos(size) { const r = bubbleArea.getBoundingClientRect(); return {x:Math.random()*(r.width-size-20)+10, y:Math.random()*(r.height-size-20)+10}; }
+            function tooClose(x,y,list,min) { return list.some(b=>Math.hypot(x-parseFloat(b.el.style.left),y-parseFloat(b.el.style.top))<min); }
+            function makeBubble(data, gold) {
+                const size = bubbleSize();
+                const el = document.createElement('div');
+                el.className = 'bubble' + (gold ? ' golden' : '');
+                el.style.width = size+'px'; el.style.height = size+'px';
+                el.style.setProperty('--float-duration', (Math.random()*2+3)+'s');
+                el.style.setProperty('--bubble-color', 'rgba(255,220,240,0.4)');
+                if(data.t) {
+                    const d = document.createElement('div');
+                    d.style.width = size*0.4+'px'; d.style.height = size*0.4+'px';
+                    d.style.background = '#ff8a80'; d.style.borderRadius = data.t==='circle'?'50%':'6px';
                     el.appendChild(d);
-                } else if(data.number!==undefined){
-                    const n=document.createElement('span');
-                    n.style.fontSize=size*0.4+'px'; n.style.fontWeight='900'; n.textContent=data.number;
+                } else if(data.n !== undefined) {
+                    const n = document.createElement('span');
+                    n.style.fontSize = size*0.4+'px'; n.style.fontWeight = '900'; n.textContent = data.n;
                     el.appendChild(n);
-                } else if(data.colorHex){
-                    const c=document.createElement('div');
-                    c.style.cssText=`width:${size*0.45}px;height:${size*0.45}px;border-radius:50%;background:${data.colorHex};`;
+                } else if(data.hex) {
+                    const c = document.createElement('div');
+                    c.style.width = size*0.45+'px'; c.style.height = size*0.45+'px';
+                    c.style.borderRadius = '50%'; c.style.background = data.hex;
                     el.appendChild(c);
                 } else {
-                    const e=document.createElement('span');
-                    e.style.fontSize=size*0.4+'px'; e.textContent=data.emoji;
+                    const e = document.createElement('span');
+                    e.style.fontSize = size*0.4+'px'; e.textContent = data.e;
                     el.appendChild(e);
                 }
-                el.addEventListener('click',(e)=>{ if(isProcessing||el.classList.contains('popping'))return; handleBubbleClick(el,data,golden); });
-                el.addEventListener('touchend',(e)=>{ if(isProcessing||el.classList.contains('popping'))return; e.preventDefault(); handleBubbleClick(el,data,golden); });
+                el.addEventListener('click', function(e) {
+                    if(processing || el.classList.contains('popping')) return;
+                    popBubble(el, data, gold);
+                });
+                el.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    if(processing || el.classList.contains('popping')) return;
+                    popBubble(el, data, gold);
+                });
                 return el;
             }
-            function handleBubbleClick(el,data,golden){
-                isProcessing=true;
-                const r=el.getBoundingClientRect();
-                const cx=r.left+r.width/2, cy=r.top+r.height/2;
+            function popBubble(el, data, gold) {
+                processing = true;
+                const r = el.getBoundingClientRect();
+                const cx = r.left+r.width/2, cy = r.top+r.height/2;
                 el.classList.add('popping');
-                playPopSound();
-                if(golden) playTone(1000,0.2);
-                spawnParticles(cx,cy,golden?20:12);
-                totalStars+=golden?3:1;
-                updateStarDisplay();
-                speakItemData(data);
-                if(totalStars%10===0) setTimeout(celebrateMilestone,400);
-                setTimeout(()=>{
+                popSound();
+                if(gold) tone(1000,0.2);
+                // 简单粒子
+                for(let i=0;i< (gold?20:12); i++) {
+                    const p = document.createElement('div');
+                    p.style.cssText = `position:fixed;z-index:200;left:${cx}px;top:${cy}px;width:8px;height:8px;background:#ff6b6b;border-radius:50%;animation:fly 0.6s forwards;--dx:${(Math.random()-0.5)*100}px;--dy:${(Math.random()-0.5)*100}px;`;
+                    document.body.appendChild(p);
+                    setTimeout(()=>p.remove(),700);
+                }
+                totalStars += gold ? 3 : 1;
+                starCountEl.textContent = totalStars;
+                levelIndicator.textContent = totalStars>=50?'🌟智慧之星':totalStars>=20?'🎈学习达人':'🌱初学宝宝';
+                speakItem(data);
+                setTimeout(() => {
                     if(el.parentNode) el.remove();
-                    bubbles=bubbles.filter(b=>b.el!==el);
-                    refillBubbles();
-                    isProcessing=false;
-                },450);
+                    bubbles = bubbles.filter(b => b.el !== el);
+                    refill();
+                    processing = false;
+                }, 450);
             }
-            function updateStarDisplay(){
-                starCountEl.textContent=totalStars;
-                levelIndicator.textContent=totalStars>=50?'🌟 智慧之星':totalStars>=20?'🎈 学习达人':'🌱 初学宝宝';
+            function refill() {
+                while(bubbles.filter(b=>!b.el.classList.contains('popping')).length < maxBubbles) spawnOne();
             }
-            function refillBubbles(){
-                while(bubbles.filter(b=>!b.el.classList.contains('popping')).length<maxBubbles) spawnOneBubble();
-            }
-            function spawnOneBubble(){
-                const pool=getDataForMode(currentMode);
+            function spawnOne() {
+                const pool = getPool(currentMode);
                 if(!pool.length) return;
-                const data=pool[Math.floor(Math.random()*pool.length)];
-                const golden=Math.random()<0.12;
-                const el=createBubbleElement(data,golden);
-                const size=getBubbleSize();
-                let pos, attempts=0;
-                const active=bubbles.filter(b=>!b.el.classList.contains('popping'));
-                do{ pos=getRandomPosition(size); }while(isTooClose(pos.x,pos.y,active,size*1.3)&&attempts++<20);
-                el.style.left=pos.x+'px'; el.style.top=pos.y+'px';
+                const data = pool[Math.floor(Math.random()*pool.length)];
+                const gold = Math.random() < 0.12;
+                const el = makeBubble(data, gold);
+                const size = bubbleSize();
+                let pos, att=0;
+                const act = bubbles.filter(b=>!b.el.classList.contains('popping'));
+                do { pos = randPos(size); } while(tooClose(pos.x,pos.y,act,size*1.3) && att++<20);
+                el.style.left = pos.x+'px'; el.style.top = pos.y+'px';
                 bubbleArea.appendChild(el);
-                bubbles.push({el,data,golden});
+                bubbles.push({el,data,gold});
             }
-            function repositionAllBubbles(){
-                const size=getBubbleSize();
-                const active=bubbles.filter(b=>!b.el.classList.contains('popping'));
-                const temp=[];
-                active.forEach(b=>{
-                    let pos,att=0;
-                    do{ pos=getRandomPosition(size); }while(isTooClose(pos.x,pos.y,temp,size*1.2)&&att++<15);
-                    b.el.style.left=pos.x+'px'; b.el.style.top=pos.y+'px';
-                    temp.push({el:b.el,x:pos.x,y:pos.y});
+            function reposition() {
+                const size = bubbleSize();
+                const act = bubbles.filter(b=>!b.el.classList.contains('popping'));
+                const tmp = [];
+                act.forEach(b => {
+                    let pos, att=0;
+                    do { pos = randPos(size); } while(tooClose(pos.x,pos.y,tmp,size*1.2)&&att++<15);
+                    b.el.style.left = pos.x+'px'; b.el.style.top = pos.y+'px';
+                    tmp.push({el:b.el, x:pos.x, y:pos.y});
                 });
             }
-            function clearAllBubbles(){
-                bubbles.forEach(b=>b.el.remove());
-                bubbles=[];
-            }
-            function initBubbles(){ clearAllBubbles(); for(let i=0;i<maxBubbles;i++) spawnOneBubble(); }
+            function clearAll() { bubbles.forEach(b=>b.el.remove()); bubbles=[]; }
 
-            modeBar.addEventListener('click',e=>{
-                const btn=e.target.closest('.mode-btn');
-                if(!btn||btn.dataset.mode===currentMode) return;
-                currentMode=btn.dataset.mode;
-                document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+            // 模式
+            modeBar.addEventListener('click', e => {
+                const btn = e.target.closest('.mode-btn');
+                if(!btn || btn.dataset.mode === currentMode) return;
+                currentMode = btn.dataset.mode;
+                modeBar.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
                 btn.classList.add('active');
-                initBubbles();
+                clearAll(); for(let i=0;i<maxBubbles;i++) spawnOne();
                 speak({mixed:'混合模式',animals:'动物朋友',fruits:'水果乐园',numbers:'数字天地',colors:'彩虹颜色',shapes:'形状王国'}[currentMode],0.9);
             });
 
-            soundBtn.addEventListener('click',()=>{
-                soundEnabled=!soundEnabled;
-                soundBtn.textContent=soundEnabled?'🔊':'🔇';
+            // 声音
+            soundBtn.addEventListener('click', ()=>{
+                soundEnabled = !soundEnabled;
+                soundBtn.textContent = soundEnabled?'🔊':'🔇';
                 if(!soundEnabled) window.speechSynthesis?.cancel();
             });
 
-            // 宝宝模式逻辑（仅点击时提示横屏）
-            function isLandscape(){ return window.innerWidth > window.innerHeight; }
-            function showRotateHint(){ rotateHint.classList.remove('hidden'); }
-            function hideRotateHint(){ rotateHint.classList.add('hidden'); }
-            hideRotateHint(); // 默认隐藏
-
-            function requestFullscreen(){
-                const el = document.documentElement;
-                const request = el.requestFullscreen || el.webkitRequestFullscreen;
-                if(request) request.call(el).catch(()=>enableFakeFullscreen());
-                else enableFakeFullscreen();
-            }
-            function enableFakeFullscreen(){
-                document.body.classList.add('fake-fullscreen');
-                window.scrollTo(0,1);
-                unlockBtn.classList.add('visible');
-            }
-            function exitFullscreen(){
-                const exit = document.exitFullscreen || document.webkitExitFullscreen;
-                if(exit) exit.call(document).catch(()=>{});
-                document.body.classList.remove('fake-fullscreen');
-                unlockBtn.classList.remove('visible');
-            }
-            function enterLockMode(){
-                if(!isLandscape()){
-                    showRotateHint();
-                    speak('请先旋转手机至横屏',0.9);
-                    return;
+            // 宝宝模式逻辑
+            function isLandscape() { return window.innerWidth > window.innerHeight; }
+            function showHint() { rotateHint.classList.add('show'); }
+            function hideHint() { rotateHint.classList.remove('show'); }
+            function clearWatcher() {
+                if(orientationWatcher) {
+                    window.removeEventListener('resize', orientationWatcher);
+                    window.removeEventListener('orientationchange', orientationWatcher);
+                    orientationWatcher = null;
                 }
-                hideRotateHint();
-                isLockedMode = true;
+            }
+            function requestFS() {
+                const el = document.documentElement;
+                const req = el.requestFullscreen || el.webkitRequestFullscreen;
+                if(req) req.call(el).catch(()=>fakeFS());
+                else fakeFS();
+            }
+            function fakeFS() {
+                document.body.classList.add('fake-fullscreen');
+                unlockBtn.classList.add('show');
+            }
+            function exitFS() {
+                const ex = document.exitFullscreen || document.webkitExitFullscreen;
+                if(ex) ex.call(document).catch(()=>{});
+                document.body.classList.remove('fake-fullscreen');
+                unlockBtn.classList.remove('show');
+            }
+            function startLock() {
+                hideHint();
+                clearWatcher();
+                isLocked = true;
                 lockBtn.textContent = '🔓 退出宝宝模式';
-                lockBtn.classList.add('active-mode');
-                requestFullscreen();
-                if(screen.orientation&&screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{});
+                lockBtn.classList.add('active');
+                requestFS();
+                if(screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{});
             }
-            function exitLockMode(){
-                if(!isLockedMode) return;
-                isLockedMode = false;
+            function enterLock() {
+                if(isLandscape()) {
+                    startLock();
+                } else {
+                    showHint();
+                    speak('请旋转手机至横屏',0.9);
+                    clearWatcher();
+                    orientationWatcher = function() {
+                        if(isLandscape()) startLock();
+                    };
+                    window.addEventListener('resize', orientationWatcher);
+                    window.addEventListener('orientationchange', orientationWatcher);
+                }
+            }
+            function exitLock() {
+                if(!isLocked) return;
+                isLocked = false;
                 lockBtn.textContent = '🔒 宝宝模式';
-                lockBtn.classList.remove('active-mode');
-                if(screen.orientation&&screen.orientation.unlock) screen.orientation.unlock();
-                exitFullscreen();
-                hideRotateHint();
+                lockBtn.classList.remove('active');
+                if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+                exitFS();
+                hideHint();
+                clearWatcher();
+                speak('已退出宝宝模式',0.9);
             }
-            lockBtn.addEventListener('click', ()=>{
-                if(isLockedMode) speak('请长按右上角解锁退出',0.9);
-                else enterLockMode();
-            });
-            unlockBtn.addEventListener('pointerdown', (e)=>{
-                e.preventDefault();
-                unlockBtn.classList.add('holding');
-                setTimeout(exitLockMode, 2000);
+
+            lockBtn.addEventListener('click', () => {
+                if(isLocked) { speak('请长按右上角解锁',0.9); }
+                else { enterLock(); }
             });
 
-            function init(){
-                getAudioContext();
-                initBubbles();
-                updateStarDisplay();
+            let holdTimer;
+            unlockBtn.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                unlockBtn.classList.add('hold');
+                holdTimer = setTimeout(exitLock, 2000);
+            });
+            unlockBtn.addEventListener('pointerup', () => {
+                clearTimeout(holdTimer);
+                unlockBtn.classList.remove('hold');
+            });
+            unlockBtn.addEventListener('pointerleave', () => {
+                clearTimeout(holdTimer);
+                unlockBtn.classList.remove('hold');
+            });
+            // 阻止旋转提示穿透点击
+            rotateHint.addEventListener('click', e => e.stopPropagation());
+
+            // 初始化
+            function init() {
+                initAudio();
+                clearAll(); for(let i=0;i<maxBubbles;i++) spawnOne();
+                hideHint();
                 setTimeout(()=>speak('欢迎来到泡泡学园！',0.85),800);
-                setInterval(refillBubbles,2000);
+                setInterval(refill,2000);
             }
+            // 动态插入动画样式
+            const style = document.createElement('style');
+            style.textContent = '@keyframes fly{to{transform:translate(var(--dx),var(--dy));opacity:0;}}';
+            document.head.appendChild(style);
             init();
         })();
     </script>
