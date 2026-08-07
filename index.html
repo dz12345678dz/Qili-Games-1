@@ -32,49 +32,6 @@
             touch-action: manipulation;
             position: relative;
         }
-        /* 旋转提示层 */
-        .rotate-hint {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            pointer-events: auto;
-            transition: opacity 0.3s;
-        }
-        .rotate-hint.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .rotate-icon {
-            font-size: 90px;
-            animation: rotatePhone 1.8s ease-in-out infinite;
-        }
-        @keyframes rotatePhone {
-            0% { transform: rotate(0deg); }
-            25% { transform: rotate(90deg); }
-            75% { transform: rotate(90deg); }
-            100% { transform: rotate(0deg); }
-        }
-        .rotate-text {
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-        .rotate-sub {
-            color: rgba(255,255,255,0.8);
-            font-size: 18px;
-            margin-top: 10px;
-        }
 
         /* 解锁按钮 (全屏时显示) */
         .unlock-btn {
@@ -106,7 +63,7 @@
             border-color: #ff5252;
         }
 
-        /* 其他原有样式保持不变 */
+        /* 装饰样式保持不变 */
         .sky-clouds {
             position: fixed;
             top: 0;
@@ -585,13 +542,6 @@
 </head>
 <body>
 
-    <!-- 旋转提示层 -->
-    <div class="rotate-hint" id="rotateHint">
-        <div class="rotate-icon">📱</div>
-        <div class="rotate-text">请旋转手机</div>
-        <div class="rotate-sub">横屏模式更适合宝宝玩耍哦～</div>
-    </div>
-
     <!-- 解锁按钮（全屏时出现） -->
     <div class="unlock-btn" id="unlockBtn">🔓</div>
 
@@ -683,7 +633,6 @@
             const soundBtn = document.getElementById('soundBtn');
             const modeBar = document.getElementById('modeBar');
             const topBar = document.getElementById('topBar');
-            const rotateHint = document.getElementById('rotateHint');
             const unlockBtn = document.getElementById('unlockBtn');
             const lockBtn = document.getElementById('lockBtn');
 
@@ -698,7 +647,6 @@
             let isSpeaking = false;
             let isLockedMode = false;
             let unlockTimer = null;
-            let unlockHoldStart = 0;
 
             function adjustForScreen() {
                 const w = window.innerWidth;
@@ -712,15 +660,8 @@
                 adjustForScreen();
                 repositionAllBubbles();
             });
-            window.addEventListener('orientationchange', () => {
-                setTimeout(() => {
-                    adjustForScreen();
-                    repositionAllBubbles();
-                    checkOrientation();
-                }, 400);
-            });
 
-            // ============ 数据定义（扩充版） ============
+            // ============ 数据定义 ============
             const dataAnimals = [
                 { emoji: '🐶', cn: '小狗', en: 'dog', sound: '汪汪汪' },
                 { emoji: '🐱', cn: '小猫', en: 'cat', sound: '喵喵喵' },
@@ -770,31 +711,30 @@
                 { emoji: '🧄', cn: '大蒜', en: 'garlic' },
                 { emoji: '🍄', cn: '蘑菇', en: 'mushroom' },
             ];
+            // 字母模块：大小写各26个，共52个
             const dataLetters = [];
             for (let i = 65; i <= 90; i++) {
-                const letter = String.fromCharCode(i);
-                dataLetters.push({
-                    emoji: `🔤`,
-                    displayText: letter,
-                    cn: `字母 ${letter}`,
-                    en: letter
-                });
+                const upper = String.fromCharCode(i);
+                const lower = upper.toLowerCase();
+                dataLetters.push({ emoji: '🔤', displayText: upper, cn: upper, en: upper });
+                dataLetters.push({ emoji: '🔤', displayText: lower, cn: lower, en: lower });
             }
+            // 拼音模块：cn 去掉“拼音”前缀
             const dataPinyin = [
-                { emoji: '📖', displayText: 'a', cn: '拼音 a', en: 'a' },
-                { emoji: '📖', displayText: 'o', cn: '拼音 o', en: 'o' },
-                { emoji: '📖', displayText: 'e', cn: '拼音 e', en: 'e' },
-                { emoji: '📖', displayText: 'i', cn: '拼音 i', en: 'i' },
-                { emoji: '📖', displayText: 'u', cn: '拼音 u', en: 'u' },
-                { emoji: '📖', displayText: 'ü', cn: '拼音 ü', en: 'ü' },
-                { emoji: '📖', displayText: 'b', cn: '拼音 b', en: 'b' },
-                { emoji: '📖', displayText: 'p', cn: '拼音 p', en: 'p' },
-                { emoji: '📖', displayText: 'm', cn: '拼音 m', en: 'm' },
-                { emoji: '📖', displayText: 'f', cn: '拼音 f', en: 'f' },
-                { emoji: '📖', displayText: 'd', cn: '拼音 d', en: 'd' },
-                { emoji: '📖', displayText: 't', cn: '拼音 t', en: 't' },
-                { emoji: '📖', displayText: 'n', cn: '拼音 n', en: 'n' },
-                { emoji: '📖', displayText: 'l', cn: '拼音 l', en: 'l' },
+                { emoji: '📖', displayText: 'a', cn: 'a', en: 'a' },
+                { emoji: '📖', displayText: 'o', cn: 'o', en: 'o' },
+                { emoji: '📖', displayText: 'e', cn: 'e', en: 'e' },
+                { emoji: '📖', displayText: 'i', cn: 'i', en: 'i' },
+                { emoji: '📖', displayText: 'u', cn: 'u', en: 'u' },
+                { emoji: '📖', displayText: 'ü', cn: 'ü', en: 'ü' },
+                { emoji: '📖', displayText: 'b', cn: 'b', en: 'b' },
+                { emoji: '📖', displayText: 'p', cn: 'p', en: 'p' },
+                { emoji: '📖', displayText: 'm', cn: 'm', en: 'm' },
+                { emoji: '📖', displayText: 'f', cn: 'f', en: 'f' },
+                { emoji: '📖', displayText: 'd', cn: 'd', en: 'd' },
+                { emoji: '📖', displayText: 't', cn: 't', en: 't' },
+                { emoji: '📖', displayText: 'n', cn: 'n', en: 'n' },
+                { emoji: '📖', displayText: 'l', cn: 'l', en: 'l' },
             ];
             const dataColors = [
                 { emoji: '🔴', cn: '红色', en: 'red', colorHex: '#ef5350' },
@@ -1319,7 +1259,7 @@
                     fruits: '水果乐园！看看有哪些水果',
                     vegetables: '蔬菜园地！多吃蔬菜身体好',
                     numbers: '数字天地！一起来数数',
-                    letters: '字母王国！认识二十六个字母',
+                    letters: '字母王国！认识大小写字母',
                     pinyin: '拼音小屋！学习拼音发音',
                     colors: '彩虹颜色！认识美丽的颜色',
                     shapes: '形状王国！发现有趣的形状',
@@ -1346,24 +1286,7 @@
                 }
             });
 
-            // ============ 横屏全屏 & 锁定逻辑 ============
-            function isLandscape() {
-                return window.innerWidth > window.innerHeight;
-            }
-            function checkOrientation() {
-                if (!isLockedMode) {
-                    if (!isLandscape() && window.innerWidth < 768) {
-                        rotateHint.classList.remove('hidden');
-                    } else {
-                        rotateHint.classList.add('hidden');
-                    }
-                } else {
-                    rotateHint.classList.add('hidden');
-                }
-            }
-            window.addEventListener('resize', checkOrientation);
-            window.addEventListener('orientationchange', checkOrientation);
-
+            // ============ 宝宝模式（不再强制横屏） ============
             function requestFullscreen(element) {
                 const el = element || document.documentElement;
                 const requestMethod = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
@@ -1377,18 +1300,6 @@
                     exitMethod.call(document).catch(err => console.log('退出全屏失败:', err));
                 }
             }
-            function lockOrientation() {
-                if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape-primary').catch(() => {
-                        screen.orientation.lock('landscape').catch(() => console.log('方向锁定不支持'));
-                    });
-                }
-            }
-            function unlockOrientation() {
-                if (screen.orientation && screen.orientation.unlock) {
-                    screen.orientation.unlock();
-                }
-            }
 
             function enterLockMode() {
                 if (isLockedMode) return;
@@ -1396,9 +1307,7 @@
                 lockBtn.textContent = '🔓 退出宝宝模式';
                 lockBtn.classList.add('active-mode');
                 unlockBtn.classList.add('visible');
-                rotateHint.classList.add('hidden');
                 requestFullscreen();
-                lockOrientation();
                 if (soundEnabled) speak('宝宝模式已开启，长按右上角锁图标退出', 0.9);
             }
             function exitLockMode() {
@@ -1407,9 +1316,7 @@
                 lockBtn.textContent = '🔒 宝宝模式';
                 lockBtn.classList.remove('active-mode');
                 unlockBtn.classList.remove('visible');
-                unlockOrientation();
                 exitFullscreen();
-                checkOrientation();
                 if (soundEnabled) speak('已退出宝宝模式', 0.9);
             }
 
@@ -1425,7 +1332,6 @@
             function startUnlockHold(e) {
                 e.preventDefault();
                 unlockBtn.classList.add('holding');
-                unlockHoldStart = Date.now();
                 if (unlockTimer) clearTimeout(unlockTimer);
                 unlockTimer = setTimeout(() => {
                     exitLockMode();
@@ -1445,17 +1351,6 @@
             unlockBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startUnlockHold(e); });
             unlockBtn.addEventListener('touchend', cancelUnlockHold);
             unlockBtn.addEventListener('touchcancel', cancelUnlockHold);
-
-            function onFullscreenChange() {
-                const isFull = document.fullscreenElement || document.webkitFullscreenElement;
-                if (isLockedMode && !isFull) {
-                    if (soundEnabled) speak('请保持全屏哦，点击宝宝模式按钮重新进入', 0.9);
-                }
-            }
-            document.addEventListener('fullscreenchange', onFullscreenChange);
-            document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-
-            checkOrientation();
 
             // ============ 初始化游戏 ============
             function init() {
