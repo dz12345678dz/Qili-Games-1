@@ -924,7 +924,7 @@
                 });
             }
 
-            // ============ 语音播报（兼容华为语音引擎） ============
+            // ============ 语音播报（原生 TTS 后备） ============
             function speak(text, rate = 0.85) {
                 if (!soundEnabled) return;
                 speechQueue.push({ text, rate });
@@ -937,33 +937,67 @@
                 }
                 isSpeaking = true;
                 const { text, rate } = speechQueue.shift();
-                if (!('speechSynthesis' in window)) {
-                    isSpeaking = false;
-                    processSpeechQueue();
-                    return;
-                }
-                window.speechSynthesis.cancel();
-                const u = new SpeechSynthesisUtterance(text);
-                // 不再强制设置 lang，避免华为引擎因 zh-CN 不兼容而无声
-                // u.lang = 'zh-CN';  // 注释掉
-                u.rate = rate;
-                u.pitch = 1.15;
-                const voices = window.speechSynthesis.getVoices();
-                const zhVoice = voices.find(v => v.lang.includes('zh-CN') || v.lang.includes('zh-TW'));
-                if (zhVoice) {
-                    u.voice = zhVoice;   // 使用找到的中文语音，此时不设置 lang 也没问题
-                }
-                u.onend = () => {
-                    setTimeout(() => {
+
+                // 优先尝试 Web Speech API
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const u = new SpeechSynthesisUtterance(text);
+                    // 不强制指定语言，让华为引擎自动匹配
+                    u.lang = '';
+                    u.rate = rate;
+                    u.pitch = 1.15;
+                    const voices = window.speechSynthesis.getVoices();
+                    const zhVoice = voices.find(v => v.lang.includes('zh-CN') || v.lang.includes('zh-TW'));
+                    if (zhVoice) u.voice = zhVoice;
+
+                    let timer = setTimeout(() => {
+                        window.speechSynthesis.cancel();
+                        fallbackNativeTTS(text, rate);
+                    }, 200);
+
+                    u.onstart = () => {
+                        clearTimeout(timer);
+                    };
+                    u.onend = () => {
                         isSpeaking = false;
                         processSpeechQueue();
-                    }, 150);
-                };
-                u.onerror = () => {
+                    };
+                    u.onerror = () => {
+                        clearTimeout(timer);
+                        fallbackNativeTTS(text, rate);
+                    };
+                    window.speechSynthesis.speak(u);
+                } else {
+                    // 浏览器不支持 Web Speech API，直接用原生 TTS
+                    fallbackNativeTTS(text, rate);
+                }
+            }
+            // 原生 TTS 后备（需要 Cordova TTS 插件）
+            function fallbackNativeTTS(text, rate) {
+                if (window.navigator && window.navigator.tts) {
+                    window.navigator.tts.speak({
+                        text: text,
+                        locale: 'zh-CN',
+                        rate: rate
+                    }, () => {
+                        isSpeaking = false;
+                        processSpeechQueue();
+                    }, (err) => {
+                        // 原生 TTS 也失败，静默处理（可播放提示音）
+                        playFallbackBeep();
+                        isSpeaking = false;
+                        processSpeechQueue();
+                    });
+                } else {
+                    // 无原生 TTS 插件，播放“叮”音提示
+                    playFallbackBeep();
                     isSpeaking = false;
                     processSpeechQueue();
-                };
-                window.speechSynthesis.speak(u);
+                }
+            }
+            // 后备提示音（仅当所有语音方式失败时播放）
+            function playFallbackBeep() {
+                playTone(800, 0.15);
             }
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.getVoices();
